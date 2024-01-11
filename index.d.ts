@@ -42,7 +42,7 @@ interface RuleItem {
   /** 是否合并不同请求的缓存数据。默认为 false 覆盖 */
   mergeCache?: boolean;
   /** 获取当前用户唯一性的 uuid，及自定义缓存数据 */
-  getUserUuid?: (
+  getUserUid?: (
     headers?: http.IncomingHttpHeaders,
     url?: string,
     cookieObj?: Record<string, string>,

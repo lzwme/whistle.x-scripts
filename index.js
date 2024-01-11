@@ -43,14 +43,14 @@ const ruleHandler = async ({ rule, idx, url, method, headers, req }) => {
 
   const cookieObj = cookieParse(headers.cookie);
   let uidData;
-  let uid = typeof rule.getUserUuid === 'function' ? rule.getUserUuid(headers, url, cookieObj, req) : rule.getUserUuid || 'defaults';
+  let uid = typeof rule.getUserUid === 'function' ? rule.getUserUid(headers, url, cookieObj, req) : rule.getUserUid || 'defaults';
   if (uid && typeof uid === 'object') {
     uidData = uid.data;
     uid = uid.uid;
   }
 
   if (!uid) {
-    result.errmsg = '[rule.getUserUuid] `uid` is required';
+    result.errmsg = '[rule.getUserUid] `uid` is required';
     return result;
   }
 
