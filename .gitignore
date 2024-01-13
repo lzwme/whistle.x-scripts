@@ -26,4 +26,4 @@ pnpm-lock.yaml
 # .flh.config.js
 .grs.config.js
 /env-config.sh
-/.w2.scte.config.js
+/w2.scte.config.js
