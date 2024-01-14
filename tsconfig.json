@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "module": "commonjs",
+    "target": "ES2021",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "moduleResolution": "node",
+    "lib": ["DOM", "ESNext"],
+    "typeRoots": ["./node_modules/@types", "./typings"]
+  },
+  "include": ["src", "typings"]
+}

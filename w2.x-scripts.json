@@ -1,0 +1,48 @@
+{
+    "version": "0.0.0",
+    "data": {
+        "whistleWCTECache": {
+            "imaotai": {
+                "0CFF3290-80C8-47E0-84E0-0C96EF3B69DF": {
+                    "update": 1705454140923,
+                    "data": {
+                        "uid": "0CFF3290-80C8-47E0-84E0-0C96EF3B69DF",
+                        "headers": {
+                            "host": "push.moutai519.com.cn",
+                            "content-type": "application/json;charset=utf-8",
+                            "mt-device-id": "0CFF3290-80C8-47E0-84E0-0C96EF3B69DF",
+                            "mt-user-tag": "0",
+                            "accept": "*/*",
+                            "userid": "1068653953",
+                            "mt-network-type": "--||4G",
+                            "mt-token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtdCIsImV4cCI6MTcwNjc1MTQxOSwidXNlcklkIjoxMDY4NjUzOTUzLCJkZXZpY2VJZCI6IjBDRkYzMjkwLTgwQzgtNDdFMC04NEUwLTBDOTZFRjNCNjlERiIsImlhdCI6MTcwNDE1OTQxOX0.5oXc0xvWLslHm-IDrU2bgp6BXj6b-DmIwx3_bKxUYFs",
+                            "mt-team-id": "",
+                            "mt-bundle-id": "com.moutai.mall",
+                            "mt-request-id": "17054541413148677",
+                            "content-length": "257",
+                            "mt-r": "clips_OlU6TmFRag5rCXwbNAQ/Tz1SKlN8THcecBp/HGhHdw==",
+                            "mt-app-version": "1.5.6",
+                            "user-agent": "iOS;17.0.2;Apple;iPhone 11",
+                            "ktoken": "059b4cd10e36e4a973c034b288ce96759be43a091ed8e6e615aebdb5136c9350",
+                            "accept-language": "zh-CN,zh-Hans;q=0.9",
+                            "accept-encoding": "gzip",
+                            "connection": "close",
+                            "x-whistle-req-id": "1705454140921-497",
+                            "x-whistle-full-url": "https%3A%2F%2Fpush.moutai519.com.cn%2Fpush-receipt%2Fpush%2Freceipt%2Fthird%2F1111%2Fios",
+                            "x-forwarded-for": "10.49.71.186",
+                            "x-whistle-client-port": "58571",
+                            "x-whistle-relative-url": "push-receipt%2Fpush%2Freceipt%2Fthird%2F1111%2Fios",
+                            "x-whistle-rule-url": "x-scripts%3A%2F%2Fpush-receipt%2Fpush%2Freceipt%2Fthird%2F1111%2Fios",
+                            "x-whistle-extra-url": "x-scripts%3A%2F%2Fpush-receipt%2Fpush%2Freceipt%2Fthird%2F1111%2Fios",
+                            "x-whistle-alpn-protocol": "h2"
+                        },
+                        "data": {
+                            "deviceId": "0CFF3290-80C8-47E0-84E0-0C96EF3B69DF",
+                            "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJtdCIsImV4cCI6MTcwNjc1MTQxOSwidXNlcklkIjoxMDY4NjUzOTUzLCJkZXZpY2VJZCI6IjBDRkYzMjkwLTgwQzgtNDdFMC04NEUwLTBDOTZFRjNCNjlERiIsImlhdCI6MTcwNDE1OTQxOX0.5oXc0xvWLslHm-IDrU2bgp6BXj6b-DmIwx3_bKxUYFs"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

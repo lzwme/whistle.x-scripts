@@ -1,17 +1,20 @@
 {
-  "name": "@lzwme/whistle.scte",
+  "name": "@lzwme/whistle.x-scripts",
   "version": "1.0.0",
-  "description": "一个 whistle 插件，可以基于配置规则提取 cookie 并保存至环境变量配置文件。也支持更新至青龙脚本的环境变量配置中。",
+  "description": "一个基于 whistle 的代理脚本插件。让用户可以针对常用网站或软件编写简单的规则脚本，即可实现自动保存登录认证 cookie、模拟接口数据、修改接口数据等功能。",
   "main": "index.js",
-  "typings": "index.d.ts",
+  "typings": "./typings/index.d.ts",
   "license": "MIT",
-  "repository": "https://github.com/lzwme/whistle.save-cookies-to-env.git",
+  "repository": "https://github.com/lzwme/whistle.x-scripts.git",
   "author": {
     "name": "renxia",
     "email": "lzwy0820@qq.com",
     "url": "https://lzw.me"
   },
   "scripts": {
+    "dev": "tsc -w",
+    "build": "npm run clean && tsc",
+    "clean": "flh rm -f dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -22,13 +25,20 @@
   ],
   "files": [
     "index.js",
-    "index.d.ts",
-    "./lib",
+    "initial.js",
+    "./typings",
+    "./dist",
+    "./x-scripts-rules",
     "rules.txt",
-    ".w2.scte.config.sample.js"
+    "w2.x-scripts.config.sample.js"
   ],
   "dependencies": {
-    "@lzwme/fe-utils": "^1.5.10",
+    "@lzwme/fe-utils": "^1.6.0",
     "micromatch": "^4.0.5"
+  },
+  "devDependencies": {
+    "@lzwme/fed-lint-helper": "^2.5.1",
+    "@types/node": "^20.11.4",
+    "typescript": "^5.3.3"
   }
 }

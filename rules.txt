@@ -1,2 +1,4 @@
-# rules.txt
-* scte://
+# 默认启用
+@whistle.x-scripts
+# 适用所有请求
+* x-scripts://

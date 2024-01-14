@@ -13,6 +13,7 @@ node_modules
 /docs/
 /tmp
 /cache
+/logs
 
 # manager
 npm-debug.log
@@ -26,4 +27,7 @@ pnpm-lock.yaml
 # .flh.config.js
 .grs.config.js
 /env-config.sh
-/w2.scte.config.js
+/w2.x-scripts.config.js
+/w2.x-scripts.cache.json
+/test-*
+/local-x-scripts-rules
