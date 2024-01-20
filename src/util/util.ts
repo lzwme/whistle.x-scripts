@@ -35,9 +35,10 @@ export const isText = (headers: http.IncomingHttpHeaders) => {
   return !type || (!isBinary(headers) && /javascript|css|html|json|xml|application\/x-www-form-urlencoded|text\//i.test(type));
 };
 
-export const isJSON = (headers: http.IncomingHttpHeaders) => {
+export const isJSON = (headers: http.IncomingHttpHeaders, isStrict = false) => {
   const type = headers['content-type'];
-  return !type || /json/i.test(type);
+  if (!type && isStrict) return false;
+  return !type || type.includes('json');
 };
 
 export const isBinary = (headers: http.IncomingHttpHeaders) => {

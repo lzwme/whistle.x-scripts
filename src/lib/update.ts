@@ -90,11 +90,12 @@ export async function updateEnvConfigFile({ name, value, desc }: EnvConfig, upda
 /** 更新处理已存在的环境变量，返回合并后的结果。若无需修改则可返回空 */
 function updateEnvValueByRegExp(re: RegExp, { name, value }: EnvConfig, oldValue: string) {
   if (!(re instanceof RegExp)) throw Error(`[${name}]updateEnvValue 应为一个正则匹配表达式`);
-  const uidValue = value.match(re)?.[0];
-  if (!uidValue) return;
+
   const sep = oldValue.includes('\n') ? '\n' : '&';
-  const oldValues = oldValue.split(sep);
-  const idx = oldValues.findIndex(d => d.includes(uidValue));
-  idx === -1 ? oldValues.unshift(value) : (oldValues[idx] = value);
-  return oldValues.join(sep);
+  if (sep !== '&') value = value.replaceAll('&', sep);
+  oldValue.split(sep).forEach(cookie => {
+    const uidValue = cookie.match(re)?.[0];
+    if (uidValue && !value.includes(uidValue)) value += `${sep}${cookie}`;
+  });
+  return value;
 }

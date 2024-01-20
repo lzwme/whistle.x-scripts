@@ -1,9 +1,10 @@
 /** @type {import('../typings').RuleItem} */
 module.exports = {
+  on: 'req-header',
   ruleId: 'imaotai',
   desc: 'imaotai预约 token 获取',
   /** url 匹配规则 */
-  url: '.moutai519.com.cn',
+  url: 'https://*.moutai519.com.cn/**',
   /** 方法匹配 */
   method: '**',
   /** 是否上传至 青龙 环境变量配置 */
@@ -13,7 +14,7 @@ module.exports = {
   /** 是否合并不同请求的缓存数据。默认为覆盖 */
   mergeCache: true,
   /** 获取当前用户唯一性的 uuid */
-  getUid: ({ headers, url, cookieObj, req }) => {
+  getCacheUid: ({ headers, url, cookieObj, req }) => {
     const deviceId = headers['mt-device-id'] || cookieObj['MT-Device-ID-Wap'];
     const data = { deviceId }; // city: 'x市', province: 'x省'
 
@@ -29,7 +30,7 @@ module.exports = {
       data,
     };
   },
-  saveCookieHandler: ({ allCacheData }) => {
+  handler: ({ allCacheData }) => {
     const allUserData = allCacheData.map(d => d.data);
     // console.log('imaotai allUserData:', JSON.stringify(allUserData, null, 2));
     // const value = allUserData.map(d => `deviceId=${d.deviceId};token=${d.token};tokenWap=${d.tokenWap};city=x市;province=x省`).join('&');

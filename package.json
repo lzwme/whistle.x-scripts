@@ -26,11 +26,11 @@
   "files": [
     "index.js",
     "initial.js",
-    "./typings",
-    "./dist",
-    "./x-scripts-rules",
     "rules.txt",
-    "w2.x-scripts.config.sample.js"
+    "w2.x-scripts.config.sample.js",
+    "./dist",
+    "./typings",
+    "./x-scripts-rules"
   ],
   "dependencies": {
     "@lzwme/fe-utils": "^1.6.0",
@@ -39,6 +39,8 @@
   "devDependencies": {
     "@lzwme/fed-lint-helper": "^2.5.1",
     "@types/node": "^20.11.4",
+    "base64-js": "^1.5.1",
+    "crypto-js": "^4.2.0",
     "typescript": "^5.3.3"
   }
 }

@@ -13,14 +13,14 @@ module.exports = [
     ruleId: 'JD_COOKIE',
     desc: '京东 cookie 自动抓取并同步至青龙环境变量',
     /** url 匹配规则 */
-    url: '.jd.com',
+    url: 'https://*.jd.com/**',
     /** 请求方法匹配 */
     method: '*',
     toQL: true,
     toEnvFile: true,
     mergeCache: false,
     /** 获取当前用户唯一性的 uid */
-    getUid: ({ cookieObj, headers, url, req }) => {
+    getCacheUid: ({ cookieObj, headers, url, req }) => {
       let uid = cookieObj.pt_pin || cookieObj.pin;
       if (!uid && cookieObj.wskey && pre_pt_pin) uid = pre_pt_pin;
 
@@ -61,13 +61,13 @@ module.exports = [
     },
     /** 更新处理已存在的环境变量，返回合并后的结果。若无需修改则可返回空 */
     updateEnvValue({ value }, oldValue, X) {
-      const pt_pin = value.match(/pin=([^;]+)/)?.[0];
-      if (!pt_pin) return;
       const sep = oldValue.includes('\n') ? '\n' : '&';
-      const oldValues = oldValue.split(sep);
-      const idx = oldValues.findIndex(cookie => cookie.includes(pt_pin));
-      idx === -1 ? oldValues.unshift(value) : (oldValues[idx] = value);
-      return oldValues.join(sep);
+      if (sep !== '&') value = value.replaceAll('&', sep);
+      oldValue.split(sep).forEach(cookie => {
+        const pin = cookie.match(/pin=[^;]+/)?.[0];
+        if (pin && !value.includes(pin)) value += `${sep}${cookie}`;
+      });
+      return value;
     },
   },
   {
@@ -75,8 +75,8 @@ module.exports = [
     ruleId: 'LZKJ_SEVENDAY',
     method: 'get',
     url: 'https://lzkj-isv.isvjcloud.com/sign/sevenDay/signActivity?activityId=',
-    getUid: ({ url }) => new URL(url).searchParams.get('activityId'),
-    saveCookieHandler({ allCacheData }) {
+    getCacheUid: ({ url }) => new URL(url).searchParams.get('activityId'),
+    handler({ allCacheData }) {
       return { envConfig: { value: allCacheData.map(d => d.uid).join(','), name: 'LZKJ_SEVENDAY' } };
     },
   },
@@ -85,18 +85,15 @@ module.exports = [
     ruleId: 'CJHY_SEVENDAY',
     method: 'get',
     url: 'https://cjhy-isv.isvjcloud.com/sign/sevenDay/signActivity?activityId=',
-    getUid: ({ url }) => new URL(url).searchParams.get('activityId'),
-    saveCookieHandler: ({ allCacheData: A }) => ({ value: A.map(d => d.uid).join(','), name: 'CJHY_SEVENDAY' }), // 可以直接返回 envConfig
+    getCacheUid: ({ url }) => new URL(url).searchParams.get('activityId'),
+    handler: ({ allCacheData: A }) => ({ value: A.map(d => d.uid).join(','), name: 'CJHY_SEVENDAY' }), // 可以直接返回 envConfig
   },
   {
     desc: 'lzkj签到有礼-activityId',
     ruleId: 'jd_lzkj_signActivity2_ids',
     url: 'https://lzkj-isv.isvjcloud.com/sign/signActivity2?activityId=',
-    getUid: ({ url }) => new URL(url).searchParams.get('activityId'),
-    saveCookieHander({ allCacheData }) {
-      return { value: allCacheData.map(d => d.uid).join(','), desc: 'lzkj签到有礼 ids', name: 'jd_lzkj_signActivity2_ids' };
-    },
-    saveCookieHandler({ allCacheData }) {
+    getCacheUid: ({ url }) => new URL(url).searchParams.get('activityId'),
+    handler({ allCacheData }) {
       return [
         { value: allCacheData.map(d => d.uid).join('&'), name: 'jd_lzkj_signActivity2_ids', desc: 'lzkj签到有礼' },
         { value: allCacheData.map(d => d.uid).join(','), name: 'LZKJ_SIGN', desc: '签到有礼超级无线-LZKJ_SIGN' },
@@ -108,10 +105,10 @@ module.exports = [
     ruleId: 'jd_cjhy_signActivity_ids',
     url: 'https://cjhy-isv.isvjcloud.com/wxActionCommon/getUserInfo',
     method: 'post',
-    getUid: ({ headers }) => {
+    getCacheUid: ({ headers }) => {
       if (headers.referer) return new URL(headers.referer).searchParams.get('activityId');
     },
-    saveCookieHandler({ allCacheData }) {
+    handler({ allCacheData }) {
       return [
         { value: allCacheData.map(d => d.uid).join('&'), name: 'jd_cjhy_signActivity_ids', desc: 'cjhy签到有礼' },
         { value: allCacheData.map(d => d.uid).join(','), name: 'CJHY_SIGN', desc: '签到有礼超级无线-CJHY_SIGN' },

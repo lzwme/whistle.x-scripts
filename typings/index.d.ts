@@ -30,53 +30,60 @@ export interface W2CookiesConfig {
   ruleDirs?: string[];
 }
 
-/**
- * 规则类型
- */
-export type RuleType = 'saveCookie' | 'mock' | 'modify';
+// export type RuleType = 'saveCookie' | 'mock' | 'modify';
+
+/** 规则执行的阶段类型 */
+export type RuleRunOnType = 'req-header' | 'req-body' | 'res-body';
 
 type PromiseMaybe<T> = T | Promise<T>;
 
 export interface RuleItem {
-  /** 该规则命中数据的缓存唯一 id */
+  /** 规则 id，唯一标记 */
   ruleId: string;
-  /**
-   * 规则类型。默认为 saveCookie
-   * @var saveCookie 从 req headers 及 cookie 提取数据并保存。为默认值
-   * @var mock 模拟请求直接返回模拟的数据。也可以拦截后重修改数据新请求
-   * @var modify 修改服务端返回的数据结果
-   */
-  type?: RuleType;
   /** 规则描述 */
   desc?: string;
+  // /**
+  //  * 规则类型。默认为 saveCookie
+  //  * @var saveCookie 从 req headers 及 cookie 提取数据并保存。为默认值
+  //  * @var mock 模拟请求直接返回模拟的数据。也可以拦截后重修改数据新请求
+  //  * @var modify 修改服务端返回的数据结果
+  //  */
+  // type?: RuleType;
+  /**
+   * 规则执行的阶段类型。
+   * @var req-header 获取到 headers 时即执行。可以更早的返回
+   * @var req-body 获取到 request body 时执行。例如针对于 post 请求 mock 的场景
+   * @var res-body 获取到远程接口返回内容后执行。例如可以保存 body、修改 body 等
+   */
+  on?: RuleRunOnType;
   /** 禁用该规则 */
   disabled?: boolean;
   /** url 匹配规则 */
   url?: string | RegExp | ((url: string, method: string, headers: IncomingHttpHeaders) => boolean);
   /** 方法匹配。** 表示全部匹配。可选： post、get、put 等 */
   method?: string;
-  /** [saveCookie]是否上传至 青龙 环境变量配置。需配置 qlToken */
+  /** [envConfig]是否上传至 青龙 环境变量配置。需配置 qlToken */
   toQL?: boolean;
-  /** [saveCookie]是否写入到环境变量配置文件中。默认是 */
+  /** [envConfig]是否写入到环境变量配置文件中。默认是 */
   toEnvFile?: boolean;
-  /** [saveCookie]是否合并不同请求的缓存数据(多个请求抓取的数据合并一起)。默认为 false 覆盖 */
+  /** [getCacheUid]是否合并不同请求的缓存数据(多个请求抓取的数据合并一起)。默认为 false 覆盖 */
   mergeCache?: boolean;
   /** 文件来源。内置赋值参数，主要用于调试 */
   _source?: string;
-  /** [saveCookie]获取当前用户唯一性的 uid，及自定义需缓存的数据 data(可选) */
-  getUid?: (ctx: RuleGetUUidCtx) => string | { uid: string; data: any } | undefined;
-  /** [saveCookie]更新处理已存在的环境变量，返回合并后的结果。若无需修改则可返回空 */
+  /** 获取当前用户唯一性的 uid，及自定义需缓存的数据 data(可选) */
+  getCacheUid?: string | ((ctx: RuleHandlerParams) => string | { uid: string; data: any } | undefined);
+  /** [envConfig]更新处理已存在的环境变量，返回合并后的结果。若无需修改则可返回空 */
   updateEnvValue?: (envConfig: EnvConfig, oldValue: string, X: any) => string | undefined;
   /** <${type}>handler 简写。根据 type 类型自动识别 */
   handler?: (ctx: RuleHandlerParams) => PromiseMaybe<RuleHandlerResult>;
-  /** [saveCookie]规则处理并返回环境变量配置。可以数组的形式返回多个 */
-  saveCookieHandler?: (ctx: RuleHandlerParams & { allCacheData: CacheData[] }) => PromiseMaybe<RuleHandlerResult | EnvConfig | EnvConfig[]>;
-  /** [mock] 接口模拟处理，返回需 mock 的结果。若返回为空则表示忽略 */
-  mockHandler?: (ctx: RuleHandlerParams) => PromiseMaybe<RuleHandlerResult<string | Buffer> | Buffer | string | object>;
-  /** [modify] TODO: */
-  modifyHandler?: (
-    ctx: RuleHandlerParams & { resBody: string | Record<string, any> | Buffer }
-  ) => PromiseMaybe<RuleHandlerResult | Buffer | string | object>;
+  // /** 规则处理并返回环境变量配置。可以数组的形式返回多个 */
+  // saveCookieHandler?: (ctx: RuleHandlerParams & { allCacheData: CacheData[] }) => PromiseMaybe<RuleHandlerResult | EnvConfig | EnvConfig[]>;
+  // /** [mock] 接口模拟处理，返回需 mock 的结果。若返回为空则表示忽略 */
+  // mockHandler?: (ctx: RuleHandlerParams) => PromiseMaybe<RuleHandlerResult<string | Buffer> | Buffer | string | object>;
+  // /** [modify] 接收到请求返回数据后修改或保存数据的处理 */
+  // modifyHandler?: (
+  //   ctx: RuleHandlerParams & { resBody: string | Record<string, any> | Buffer }
+  // ) => PromiseMaybe<RuleHandlerResult | Buffer | string | object>;
 }
 
 export type RuleGetUUidCtx = {
@@ -92,23 +99,28 @@ export type RuleHandlerParams = {
   X: Record<string, any>;
   /** 请求 url 完整地址 */
   url: string;
+  /** req.headers */
   headers: IncomingHttpHeaders;
-  /** [type=saveCookie] headers.cookie 格式化为的对象格式 */
-  cookieObj?: Record<string, string>;
-  /** [type=saveCookie] saveCookie 类型，返回同一规则缓存的所有数据(包含由 getUid 格式化返回的 data 数据) */
-  allCacheData?: CacheData[];
-  /** [type=mock] 请求参数 body */
+  /** req.headers.cookie 格式化为的对象格式 */
+  cookieObj: Record<string, string>;
+  /** 当设置了 getCacheUid 时，返回同一规则缓存的所有数据(包含由 getCacheUid 格式化返回的 data 数据) */
+  allCacheData: CacheData[];
+  /** [on=req-body, res-body] 请求参数 body */
   reqBody?: Record<string, any> | Buffer;
-  /** [type=modify] 接口返回body */
-  resBody?: Record<string, any> | Buffer;
+  /** [on=res-body] 远程接口返回的 body */
+  resBody?: string | Record<string, any> | Buffer;
+  /** [on=res-body] 远程接口返回的 headers */
+  resHeaders?: IncomingHttpHeaders;
 };
 
 export type RuleHandlerResult<T = any> = {
   errmsg?: string;
-  /** [saveCookie] 返回环境变量的配置 */
+  /** 返回环境变量的置。返回空则忽略，否则会根据 toQL 和 toEnvFile 更新环境变量 */
   envConfig?: EnvConfig[] | EnvConfig | undefined;
-  /** [mock/modify] 返回值。若返回为空表示忽略 */
+  /** 返回值。若返回为空表示忽略，否则则以该值返回给接口调用 */
   body?: T;
+  /** [req-body] 请求参数消息体。若存在则以该值替换原请求参数 */
+  reqBody?: string | Buffer | Record<stirng, any>;
 };
 
 export interface EnvConfig {
@@ -120,9 +132,9 @@ export interface EnvConfig {
 }
 
 interface CacheData<T = any> {
-  /** 数据唯一标记，尽量以用户ID等可识别唯一性的参数值。getUid 方法返回 */
+  /** 数据唯一标记，尽量以用户ID等可识别唯一性的参数值。getCacheUid 方法返回 */
   uid: string;
-  /** getUid 方法返回，并保存至缓存中的自定义数据。是可选的，主要用于需组合多个请求数据的复杂场景 */
+  /** getCacheUid 方法返回，并保存至缓存中的自定义数据。是可选的，主要用于需组合多个请求数据的复杂场景 */
   data: T;
   headers: IncomingHttpHeaders;
 }
