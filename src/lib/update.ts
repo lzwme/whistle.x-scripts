@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 13:38:34
  * @LastEditors: renxia
- * @LastEditTime: 2024-01-18 10:51:40
+ * @LastEditTime: 2024-01-23 08:44:19
  * @Description:
  */
 import fs from 'node:fs';
@@ -33,7 +33,7 @@ export async function updateToQlEnvConfig({ name, value, desc }: EnvConfig, upda
 
   if (item) {
     if (item.value.includes(value)) {
-      logger.log(`[updateToQL]${cyan(name)} is already ${gray(value)}`);
+      logger.log(`[${magenta('updateToQL')}]${cyan(name)} is already ${gray(value)}`);
       return;
     }
 

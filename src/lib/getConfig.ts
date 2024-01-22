@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 13:17:00
  * @LastEditors: renxia
- * @LastEditTime: 2024-01-18 09:41:53
+ * @LastEditTime: 2024-01-22 14:30:54
  * @Description:
  */
 import type { W2CookiesConfig } from '../../typings';
@@ -39,7 +39,7 @@ export function getConfig(useCache = true) {
         if (!existsSync(configFilePath)) return;
 
         assign(config, require(configFilePath));
-        config.rules.forEach(d => d._source = configFilePath);
+        config.rules.forEach(d => (d._source = configFilePath));
         logger.info('配置文件加载成功', color.cyan(configFilePath));
         return true;
       } catch (e) {
@@ -55,7 +55,10 @@ export function getConfig(useCache = true) {
     config.throttleTime = Math.max(1, +config.throttleTime || 10);
 
     const allRules = rulesManage.loadRules(config.ruleDirs, !isLoaded);
-    config.rules.forEach(d => allRules.add(d));
+    config.rules.forEach(d => {
+      if (Array.isArray(d)) d.forEach(d => allRules.add(d));
+      else allRules.add(d);
+    });
     rulesManage.classifyRules([...allRules], !isLoaded);
 
     isLoaded = true;

@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 16:53:50
  * @LastEditors: renxia
- * @LastEditTime: 2024-01-18 09:46:50
+ * @LastEditTime: 2024-01-23 16:46:11
  * @Description:
  */
 /// <reference path="global.d.ts" />
@@ -60,7 +60,7 @@ export interface RuleItem {
   disabled?: boolean;
   /** url 匹配规则 */
   url?: string | RegExp | ((url: string, method: string, headers: IncomingHttpHeaders) => boolean);
-  /** 方法匹配。** 表示全部匹配。可选： post、get、put 等 */
+  /** 方法匹配。可选： post、get、put 等。设置为空或 ** 表示全部匹配。若不设置，默认为 post */
   method?: string;
   /** [envConfig]是否上传至 青龙 环境变量配置。需配置 qlToken */
   toQL?: boolean;

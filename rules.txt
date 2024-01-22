@@ -1,4 +1,8 @@
-# 默认启用
+# 默认启用插件
 @whistle.x-scripts
+
 # 适用所有请求
 * x-scripts://
+
+# 强制开启 https 拦截
+# * enable://capture

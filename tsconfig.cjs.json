@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "module": "commonjs",
+    "target": "ES2021"
+  },
+  "extends": "./tsconfig.json",
+  "include": ["src/server.ts", "src/init.ts", "typings"]
+}

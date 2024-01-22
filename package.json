@@ -1,7 +1,7 @@
 {
   "name": "@lzwme/whistle.x-scripts",
-  "version": "1.0.0",
-  "description": "一个基于 whistle 的代理脚本插件。让用户可以针对常用网站或软件编写简单的规则脚本，即可实现自动保存登录认证 cookie、模拟接口数据、修改接口数据等功能。",
+  "version": "0.0.1",
+  "description": "一个基于 whistle 的代理脚本插件。用于辅助 web 程序调试、逆向学习等目的。让用户可以用自由编码开发的方式编写简单的规则脚本，即可实现自动保存登录认证 cookie、模拟接口数据、修改接口数据等功能。",
   "main": "index.js",
   "typings": "./typings/index.d.ts",
   "license": "MIT",
@@ -12,10 +12,14 @@
     "url": "https://lzw.me"
   },
   "scripts": {
-    "dev": "tsc -w",
-    "build": "npm run clean && tsc",
+    "prepare": "husky install",
+    "dev": "tsc -p tsconfig.cjs.json -w",
+    "lint": "flh --prettier --tscheck",
+    "build": "npm run clean && tsc -p tsconfig.cjs.json",
+    "version": "standard-version",
+    "release": "npm run version && git push --follow-tags origin main",
     "clean": "flh rm -f dist",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run lint"
   },
   "keywords": [
     "whistle",
@@ -23,6 +27,14 @@
     "cookie",
     "env"
   ],
+  "packageManager": "pnpm@8.0.0",
+  "engines": {
+    "node": ">=16"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.com"
+  },
   "files": [
     "index.js",
     "initial.js",
@@ -37,10 +49,13 @@
     "micromatch": "^4.0.5"
   },
   "devDependencies": {
-    "@lzwme/fed-lint-helper": "^2.5.1",
-    "@types/node": "^20.11.4",
+    "@lzwme/fed-lint-helper": "^2.5.2",
+    "@types/node": "^20.11.5",
     "base64-js": "^1.5.1",
     "crypto-js": "^4.2.0",
+    "husky": "^8.0.3",
+    "prettier": "^3.2.4",
+    "standard-version": "^9.5.0",
     "typescript": "^5.3.3"
   }
 }

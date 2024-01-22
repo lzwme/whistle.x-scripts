@@ -6,6 +6,7 @@ import type { RuleRunOnType, RuleItem } from '../../typings';
 
 const { green, cyan, magenta, magentaBright, greenBright } = color;
 const RulesCache: Partial<Record<RuleRunOnType | 'all', Map<string, RuleItem>>> = { all: new Map() };
+const RuleOnList = ['req-header', 'req-body', 'res-body'] as const;
 
 function ruleFormat(rule: RuleItem) {
   if (!rule || (!rule.ruleId && !rule.url)) return false;
@@ -20,7 +21,13 @@ function ruleFormat(rule: RuleItem) {
     logger.log(`未设置 ruleId 参数，采用 desc/url + method。[${rule.ruleId}]`);
   }
 
-  if (!rule.on) rule.on = rule.getCacheUid ? 'req-header' : 'res-body';
+  if (!rule.on || !RuleOnList.includes(rule.on)) {
+    const ruleOn = rule.getCacheUid ? 'req-header' : 'res-body';
+    if (rule.on) logger.warn(`[${rule.on}] 参数错误，自动设置为[${ruleOn}]！只能取值为: ${RuleOnList.join(', ')}`, rule.ruleId);
+    rule.on = ruleOn;
+  }
+
+  if (rule.method == null) rule.method = 'post';
 
   if (!rule.desc) rule.desc = `${rule.ruleId}_${rule.url || rule.method}`;
 

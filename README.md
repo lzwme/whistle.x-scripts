@@ -14,9 +14,9 @@
 
 一个基于 [whistle](https://wproxy.org) 的代理脚本插件，用于辅助 web 程序调试、逆向学习等目的。
 
-常见的流行代理工具 WireShark、fiddler、charles、whistle、burpsuite、mitmproxy 等自带的能力本身已相当强大，但是在实现较为复杂的自定义逻辑目的时，要么无法实现，要么配置规则相当复杂。需要以一定的编码开发方式才可实现。
+常见的流行代理工具软件如 WireShark、fiddler、charles、whistle、burpsuite、mitmproxy 等本身自带的能力已相当强大，但是在实现较为复杂的自定义逻辑目的时，要么配置规则相当复杂，拥有较高的规则编写学习成本，要么需要开发对应的插件实现。
 
-基于 whistle 和 `@lzwme/whistle.x-scripts` 插件提供的能力，用户只需针对常用网站或软件编写简单的规则脚本，即可以自由编码等方式实现自动保存登录认证 cookie、拦截、模拟、修改、和保存接口数据等功能。基于该能力，你可以以较低的成本实现：认证信息同步、广告过滤、数据修改、数据缓存、文件替换调试等目的。
+本插件基于代理工具 `whistle` 的插件开发能力，提供了一套简易的脚本编写规范。基于该规范，对于拥有简单的 JavaScript 开发能力的同学来说，只需针对常用网站或软件以自由编码的形式编写少量的代码规则脚本，即可实现绝大多数场景需求。如实现自动保存登录认证 cookie、拦截、模拟、修改、和保存接口数据等功能，从而可以以较低的成本实现：认证信息同步、广告过滤、数据修改、数据缓存、文件替换调试等目的。
 
 **功能特性：**
 
@@ -45,21 +45,48 @@ w2 install @lzwme/whistle.x-scripts
 
 ## 使用
 
-在当前目录下，新建配置文件 `w2.x-scripts.config.js`。内容参考：[w2.x-scripts.config.sample.js](./w2.x-scripts.config.sample.js)
+### 快速开始
 
-启动 `whistle`：
+首先，在当前工作目录下新建配置文件 `w2.x-scripts.config.js`。内容参考：[w2.x-scripts.config.sample.js](./w2.x-scripts.config.sample.js)
+
+然后在配置文件中的 `rules` 或 `ruleDirs` 配置项中，添加配置自定义的规则脚本。
+
+最后启动 `whistle`：
 
 ```bash
-# 调试方式，可以从控制台看到日志，适用于自编写调试规则时
-whistle run
+# 调试方式启动：可以从控制台看到日志，适用于自编写调试规则时
+w2 run
 
-# 以守护进程方式正常启动
-whistle start
+# 守护进程方式启动：适用于服务器运行时
+w2 start
 ```
+
+可以从控制台日志看到具体启动的代理地址。应当为：`http://[本机IP]:8899`
 
 **提示：**
 
 若希望可以在任意位置启动并加载配置文件，可将配置文件放置在 `Home` 目录下，即： `~/w2.x-scripts.config.js`。
+
+### 设备设置代理
+
+- 当前运行 `whistle` 的设备设置代理
+
+```bash
+# 安装 根证书
+w2 ca
+
+# 设置代理
+w2 proxy
+
+# 取消代理
+w2 proxy off
+```
+
+详情可参考 `whistle` 文档：[代理与证书](https://wproxy.org/whistle/proxy.html)
+
+- 移动设备设置代理
+
+移动设备设置代理，需先在 `whistle` 运行时安装 `whistle` 根证书。具体配置方法不同的设备稍有差异，具体可根据你的设备搜索查找其对应详细的代理设置方法。`whistle` 文档相关参考：[安装启动](https://wproxy.org/whistle/install.html)
 
 ### 青龙面板中使用参考
 
@@ -91,11 +118,40 @@ w2 start -M capture
 
 ## 规则脚本的编写
 
-1. 新建一个用于脚本规则编写的项目目录，如 `x-scripts-test`，进入它，并新建一个存放脚本的目录，如 `local-x-scripts-rules`。
-1. 参考 [w2.x-scripts.config.sample.js](./w2.x-scripts.config.sample.js) 新建配置文件 `w2.x-scripts.config.js`。
-1. 然后即可在 `local-x-scripts-rules` 下新建 `.js` 文件并编写具体的规则脚本。
+你可以在配置文件 `w2.x-scripts.config.js` 中的 `rules` 字段中直接编写规则，也可以在其他目录下新建 `.js` 文件并编写具体的规则脚本，然后在 `ruleDirs` 字段中引入。
 
-具体编写方法，请参考配置示例和类型定义文件：
+一个极其简单的规则脚本示例：
+
+```js
+/** @type {import('@lzwme/whistle.x-scripts').RuleItem} */
+const rule = {
+  disabled: false, // 是否禁用该规则
+  on: 'res-body', // 规则执行的时机，res-body 表示在收到响应体后触发
+  ruleId: 'print-response-body', // 规则唯一标记，必须设置且唯一
+  desc: '打印接口返回内容', // 规则描述
+  url: '**', // ** 表示匹配所有 url 地址
+  handler({ url, req, reqBody, resHeaders, resBody, X }) {
+    // 只处理文本类型的请求
+    if (X.isText(req.headers) && !/\.(js|css)/.test(url)) {
+      // X 是提供的工具类对象，方便简化脚本编写逻辑调用
+      const { magenta, gray, cyan } = X.FeUtils.color;
+
+      console.log(`\n\n[${magenta('handler')}][${cyan(req.method)}] -`, gray(url));
+      console.log(cyan('\req headers:'), req.headers);
+      console.log(cyan('\res headers:'), resHeaders);
+      if (reqBody) console.log(cyan('请求参数：'), reqBody.toString());
+      if (resBody) console.log(cyan('返回内容：'), resBody);
+    }
+
+    // body: 若返回 body 字段，则会以该内容返回；
+    // envConfig: 若返回 envConfig 字段，则会根据其内容及配置写入本地环境变量文件、上传至青龙面板等
+    // return { body: modifyedResBody, envConfig };
+  },
+};
+module.exports = rule;
+```
+
+具体编写方法请参考配置示例和类型定义文件：
 
 - [x-scripts-rules](./x-scripts-rules) 提供了一些内置的规则脚本，可作为规则脚本的编写参考示例。
 - [w2.x-scripts.config.sample.js](./w2.x-scripts.config.sample.js)
@@ -104,10 +160,10 @@ w2 start -M capture
 **提示：**
 
 - 您可以设置环境变量 `DEBUG=1` 以开启调试模式。
-- 所有名称包含 `x-scripts-rules` 的目录下的脚本规则都会自动加载。
+- 当前工作路径下所有名称包含 `x-scripts-rules` 的目录下的 `.js` 文件都会被自动加载。
 - **⚠️警告：自定义脚本会真实的在服务器上执行，且拥有较高的安全风险，请不要在工作用机上部署。建议基于 docker 等虚拟化技术使用。**
 
-### 规则编写示例
+### 脚本规则示例
 
 内置脚本规则：
 
@@ -153,13 +209,14 @@ w2 run
 
 ## 扩展参考
 
-- 
+- [whistle 插件开发](https://wproxy.org/whistle/plugins.html)
+- [Custom extension script for whistle](https://github.com/whistle-plugins/whistle.script)
 
 ## 免责说明
 
-- 本插件仅用于个人对 web 程序逆向的兴趣研究学习，请勿用于商业用途、任何恶意目的，否则后果自负。
+- 本插件项目仅用于个人对 web 程序逆向的兴趣研究学习，请勿用于商业用途、任何恶意目的，否则后果自负。
 - 由于插件引入自定义脚本会真实的在服务器上执行，使用第三方编写的脚本时请谨慎甄别安全风险，请尽可能的在虚拟化容器内使用。
-- 本人对使用本插件或插件涉及的任何脚本引发的问题概不负责，包括但不限于由脚本错误引起的任何损失或损害。
+- 请自行评估使用本插件及基于本插件规范开发的第三方规则脚本的安全风险。本人对使用本插件或插件涉及的任何脚本引发的问题概不负责，包括但不限于由脚本错误引起的任何损失或损害。
 
 ## License
 
