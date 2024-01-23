@@ -17,7 +17,7 @@
     "lint": "flh --prettier --tscheck",
     "build": "npm run clean && tsc -p tsconfig.cjs.json",
     "version": "standard-version",
-    "release": "npm run version && git push --follow-tags origin main",
+    "release": "npm run test && npm run build",
     "clean": "flh rm -f dist",
     "test": "npm run lint"
   },

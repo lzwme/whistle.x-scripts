@@ -64,7 +64,9 @@ export class QingLoing {
   }
   /** 查询任务列表 */
   async getTaskList(searchValue = '') {
-    const { data } = await this.req.get<{ code: number; data: { data: QLTaskItem[] } }>(`${this.config.host}/api/crons?searchValue=${searchValue}&t=${Date.now()}`);
+    const { data } = await this.req.get<{ code: number; data: { data: QLTaskItem[] } }>(
+      `${this.config.host}/api/crons?searchValue=${searchValue}&t=${Date.now()}`
+    );
     return data.data?.data || [];
   }
   /** 禁用任务 */

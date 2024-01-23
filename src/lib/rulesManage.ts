@@ -55,7 +55,7 @@ function classifyRules(rules: RuleItem[], isInit = false) {
     }
 
     RulesCache[rule.on]!.set(rule.ruleId, rule);
-    logger.log(`Load Rule:[${rule.on}][${cyan(rule.ruleId)}]`, green(rule.desc));
+    logger.info(`Load Rule:[${rule.on}][${cyan(rule.ruleId)}]`, green(rule.desc));
   });
 
   const s = [...Object.entries(RulesCache)].filter(d => d[0] !== 'all').map(d => `${cyan(d[0])}: ${green(d[1].size)}`);
@@ -71,7 +71,7 @@ function loadRules(filepaths: string[] = [], isInit = false) {
 
     if (statSync(filepath).isDirectory()) {
       readdirSync(filepath)
-        .filter(d => /(rules)|(\.c?js)/.test(d))
+        .filter(d => /rules|src|(\.c?js)$/.test(d))
         .forEach(d => findRuleFiles(resolve(filepath, d)));
     } else if (/\.c?js/.test(filepath)) {
       filesSet.add(resolve(process.cwd(), filepath));
@@ -79,13 +79,7 @@ function loadRules(filepaths: string[] = [], isInit = false) {
   };
 
   // 合入当前目录下名称包含 `x-scripts-rule` 的文件或目录
-  new Set(
-    readdirSync(process.cwd())
-      .filter(d => d.includes('x-scripts-rule'))
-      .concat(filepaths)
-      .filter(Boolean)
-      .map(d => resolve(d))
-  ).forEach(d => findRuleFiles(d));
+  new Set(filepaths.filter(Boolean).map(d => resolve(d))).forEach(d => findRuleFiles(d));
 
   const rules = new Set<RuleItem>();
   for (let filepath of filesSet) {
@@ -104,7 +98,7 @@ function loadRules(filepaths: string[] = [], isInit = false) {
         rules.add(rule);
       }
     } catch (e) {
-      logger.log('尝试从文件加载规则失败：', filepath, e.message);
+      logger.debug('尝试从文件加载规则失败：', filepath, e.message);
     }
   }
 

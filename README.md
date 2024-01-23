@@ -16,7 +16,7 @@
 
 常见的流行代理工具软件如 WireShark、fiddler、charles、whistle、burpsuite、mitmproxy 等本身自带的能力已相当强大，但是在实现较为复杂的自定义逻辑目的时，要么配置规则相当复杂，拥有较高的规则编写学习成本，要么需要开发对应的插件实现。
 
-本插件基于代理工具 `whistle` 的插件开发能力，提供了一套简易的脚本编写规范。基于该规范，对于拥有简单的 JavaScript 开发能力的同学来说，只需针对常用网站或软件以自由编码的形式编写少量的代码规则脚本，即可实现绝大多数场景需求。如实现自动保存登录认证 cookie、拦截、模拟、修改、和保存接口数据等功能，从而可以以较低的成本实现：认证信息同步、广告过滤、数据修改、数据缓存、文件替换调试等目的。
+本插件基于代理工具 `whistle` 的插件开发能力，提供了一套简易的脚本编写规范。基于该规范，对于拥有简单的 JavaScript 开发能力的同学来说，只需针对常用网站或软件以自由编码的形式编写少量的代码规则，即可实现绝大多数场景需求。如实现自动保存登录认证 cookie、拦截、模拟、修改、和保存接口数据等功能，从而可以以较低的成本实现：认证信息同步、广告过滤、数据修改、数据缓存、文件替换调试等目的。
 
 **功能特性：**
 
@@ -49,7 +49,7 @@ w2 install @lzwme/whistle.x-scripts
 
 首先，在当前工作目录下新建配置文件 `w2.x-scripts.config.js`。内容参考：[w2.x-scripts.config.sample.js](./w2.x-scripts.config.sample.js)
 
-然后在配置文件中的 `rules` 或 `ruleDirs` 配置项中，添加配置自定义的规则脚本。
+然后在配置文件中的 `rules` 或 `ruleDirs` 配置项中，添加配置自定义的规则。
 
 最后启动 `whistle`：
 
@@ -116,11 +116,11 @@ w2 start -M capture
 
 各配置项及详细说明请参考类型定义[W2CookiesConfig]('./index.d.ts')。
 
-## 规则脚本的编写
+## 脚本规则的编写
 
-你可以在配置文件 `w2.x-scripts.config.js` 中的 `rules` 字段中直接编写规则，也可以在其他目录下新建 `.js` 文件并编写具体的规则脚本，然后在 `ruleDirs` 字段中引入。
+你可以在配置文件 `w2.x-scripts.config.js` 中的 `rules` 字段中直接编写规则，也可以在其他目录下新建 `.js` 文件并编写具体的脚本规则，然后在 `ruleDirs` 字段中引入。
 
-一个极其简单的规则脚本示例：
+一个极其简单的脚本规则示例：
 
 ```js
 /** @type {import('@lzwme/whistle.x-scripts').RuleItem} */
@@ -153,7 +153,7 @@ module.exports = rule;
 
 具体编写方法请参考配置示例和类型定义文件：
 
-- [x-scripts-rules](./x-scripts-rules) 提供了一些内置的规则脚本，可作为规则脚本的编写参考示例。
+- [x-scripts-rules](https://github.com/lzwme/x-scripts-rules) 提供了一些示例脚本，可作为脚本规则的编写参考示例。
 - [w2.x-scripts.config.sample.js](./w2.x-scripts.config.sample.js)
 - [index.d.ts](./index.d.ts)
 
@@ -165,15 +165,16 @@ module.exports = rule;
 
 ### 脚本规则示例
 
-内置脚本规则：
+可直接下载使用的脚本规则：
 
-- [x-scripts-rules](./x-scripts-rules/) 目录下包含了内置的规则脚本可做参考。
-  - [jd.js](./x-scripts-rules/jd.js) **自动保存某东 cookie** 至本地环境变量文件，并上传至青龙面板
-  - [imaotai.js](./x-scripts-rules/imaotai.js) **自动保存i茅台 token** 并上传至青龙面板
+- [https://github.com/lzwme/x-scripts-rules](https://github.com/lzwme/x-scripts-rules)
+  - [jd.js](https://github.com/lzwme/x-scripts-rules/blob/main/src/jd.js) **自动保存某东 cookie** 至本地环境变量文件，并上传至青龙面板
+  - [imaotai.js](https://github.com/lzwme/x-scripts-rules/blob/main/src/imaotai.js) **自动保存i茅台 token** 并上传至青龙面板
+  - 更多实用示例脚本持续添加中...
 
 模板示例脚本规则：
 
-- [example/rules](./example/rules/) 目录下包含了常用场景及示例规则脚本，可作为模板示例参考使用。
+- [example/rules](./example/rules/) 目录下包含了常用场景及示例脚本，可作为模板示例参考使用。
   - [**打印**所有接口请求与返回信息](./example/rules/print-res-body.js)
   - [**保存**在访问bing首页时加载的每日背景图至本地](./example/rules/bing-save-images.js)
   - [**修改**百度首页网盘入口为自定义链接地址](./example/rules/modify-baidu-index.js)
@@ -216,7 +217,7 @@ w2 run
 
 - 本插件项目仅用于个人对 web 程序逆向的兴趣研究学习，请勿用于商业用途、任何恶意目的，否则后果自负。
 - 由于插件引入自定义脚本会真实的在服务器上执行，使用第三方编写的脚本时请谨慎甄别安全风险，请尽可能的在虚拟化容器内使用。
-- 请自行评估使用本插件及基于本插件规范开发的第三方规则脚本的安全风险。本人对使用本插件或插件涉及的任何脚本引发的问题概不负责，包括但不限于由脚本错误引起的任何损失或损害。
+- 请自行评估使用本插件及基于本插件规范开发的第三方脚本的安全风险。本人对使用本插件或插件涉及的任何脚本引发的问题概不负责，包括但不限于由脚本错误引起的任何损失或损害。
 
 ## License
 

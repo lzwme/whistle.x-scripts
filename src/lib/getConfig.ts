@@ -6,8 +6,8 @@
  * @Description:
  */
 import type { W2CookiesConfig } from '../../typings';
-import { existsSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, readdirSync, statSync } from 'node:fs';
+import { basename, resolve } from 'node:path';
 import { homedir } from 'node:os';
 import { assign, color } from '@lzwme/fe-utils';
 import { logger } from './helper';
@@ -50,9 +50,18 @@ export function getConfig(useCache = true) {
 
     if (!config.logType) config.logType = config.debug ? 'debug' : 'info';
     logger.updateOptions({ levelType: config.logType, debug: config.debug });
-    if (!isLoadUserConfig) logger.info('请创建配置文件', color.yellow(defaultConfigFile));
+    if (!isLoadUserConfig) {
+      logger.info(
+        `请创建配置文件: ${color.yellow(defaultConfigFile)}`,
+        `\n参考: ${color.cyan(resolve(__dirname, '../../w2.x-scripts.config.sample.js'))}`
+      );
+    }
 
     config.throttleTime = Math.max(1, +config.throttleTime || 10);
+
+    if (!Array.isArray(config.ruleDirs)) config.ruleDirs = [config.ruleDirs as never as string];
+    if (basename(process.cwd()).includes('x-scripts-rules')) config.ruleDirs.push(process.cwd());
+    readdirSync(process.cwd()).forEach(d => d.includes('x-scripts-rule') && config.ruleDirs!.push(d));
 
     const allRules = rulesManage.loadRules(config.ruleDirs, !isLoaded);
     config.rules.forEach(d => {
