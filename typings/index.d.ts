@@ -9,7 +9,7 @@
 
 type IncomingHttpHeaders = import('http').IncomingHttpHeaders;
 
-export interface W2CookiesConfig {
+export interface W2XScriptsConfig {
   /** 是否开启调试模式。默认读取环境变量 DEBUG */
   debug?: boolean;
   /** 日志级别。默认为 info */
@@ -28,6 +28,10 @@ export interface W2CookiesConfig {
   rules?: RuleItem[];
   /** 指定规则集文件路径或所在目录，尝试从该列表加载自定义的规则集 */
   ruleDirs?: string[];
+  /** 启用的 ruleId。若设置，则仅在该列表中的 ruleId 会启用 */
+  ruleInclude?: string[];
+  /** 排除/禁用的 ruleId。若设置，则在该列表中的 ruleId 会被过滤 */
+  ruleExclude?: string[];
 }
 
 // export type RuleType = 'saveCookie' | 'mock' | 'modify';

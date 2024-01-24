@@ -2,7 +2,7 @@ import { existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { color } from '@lzwme/fe-utils';
 import { logger } from './helper';
-import type { RuleRunOnType, RuleItem } from '../../typings';
+import type { RuleRunOnType, RuleItem, W2XScriptsConfig } from '../../typings';
 
 const { green, cyan, magenta, magentaBright, greenBright } = color;
 const RulesCache: Partial<Record<RuleRunOnType | 'all', Map<string, RuleItem>>> = { all: new Map() };
@@ -34,15 +34,18 @@ function ruleFormat(rule: RuleItem) {
   return rule;
 }
 
-function classifyRules(rules: RuleItem[], isInit = false) {
+function classifyRules(rules: RuleItem[], config: W2XScriptsConfig, isInit = false) {
   if (isInit) Object.values(RulesCache).forEach(cache => cache.clear());
 
+  const { ruleInclude = [], ruleExclude = [] } = config;
   rules.forEach((rule, idx) => {
     if (!rule || !ruleFormat(rule)) return;
     RulesCache.all.set(rule.ruleId, rule);
 
-    if (rule.disabled) {
-      logger.log(`规则已禁用: [${rule.on}][${rule.ruleId}][${rule.desc}]`);
+    const disabled = rule.disabled || ruleExclude.includes(rule.ruleId) || (ruleInclude.length && !ruleInclude.includes(rule.ruleId));
+
+    if (disabled) {
+      logger.log(`规则已${rule.disabled ? '禁用' : '过滤'}: [${rule.on}][${rule.ruleId}][${rule.desc}]`);
       if (RulesCache[rule.on]?.has(rule.ruleId)) RulesCache[rule.on]!.delete(rule.ruleId);
       return;
     }

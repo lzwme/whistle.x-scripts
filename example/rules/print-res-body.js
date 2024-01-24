@@ -4,6 +4,7 @@ module.exports = {
   on: 'res-body', // 规则执行的时机，res-body 表示在收到响应体后触发
   ruleId: 'print-response-body', // 规则唯一标记，必须设置且唯一
   desc: '打印接口返回内容', // 规则描述
+  method: '*',
   url: '**', // ** 表示匹配所有 url 地址
   handler({ url, req, reqBody, resHeaders, resBody, X }) {
     // 只处理文本类型的请求
@@ -19,6 +20,7 @@ module.exports = {
     }
 
     // 若返回 body 参数则会以该内容返回
-    // return { body: modifyedResBody };
+    // 若返回 envConfig 参数则会以该内容写入环境变量文件
+    // return { body: modifyedResBody, envConfig };
   },
 };

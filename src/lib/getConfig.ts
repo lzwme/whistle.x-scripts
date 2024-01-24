@@ -5,7 +5,7 @@
  * @LastEditTime: 2024-01-22 14:30:54
  * @Description:
  */
-import type { W2CookiesConfig } from '../../typings';
+import type { W2XScriptsConfig } from '../../typings';
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { homedir } from 'node:os';
@@ -13,7 +13,7 @@ import { assign, color } from '@lzwme/fe-utils';
 import { logger } from './helper';
 import { rulesManage } from './rulesManage';
 
-const config: W2CookiesConfig = {
+const config: W2XScriptsConfig = {
   debug: Boolean(process.env.DEBUG),
   logType: process.env.LOG_TYPE as never,
   qlHost: process.env.QL_HOST || 'http://127.0.0.1:5700',
@@ -68,7 +68,7 @@ export function getConfig(useCache = true) {
       if (Array.isArray(d)) d.forEach(d => allRules.add(d));
       else allRules.add(d);
     });
-    rulesManage.classifyRules([...allRules], !isLoaded);
+    rulesManage.classifyRules([...allRules], config, !isLoaded);
 
     isLoaded = true;
   }

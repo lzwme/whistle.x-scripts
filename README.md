@@ -114,7 +114,7 @@ w2 start -M capture
 
 配置文件名称为 `w2.x-scripts.config.js`，默认会在当前目录和用户 Home 目录下查找。
 
-各配置项及详细说明请参考类型定义[W2CookiesConfig]('./index.d.ts')。
+各配置项及详细说明请参考类型定义[W2XScriptsConfig]('./index.d.ts')。
 
 ## 脚本规则的编写
 
