@@ -1,3 +1,10 @@
+/*
+ * @Author: renxia
+ * @Date: 2024-01-22 14:00:13
+ * @LastEditors: renxia
+ * @LastEditTime: 2024-01-26 09:09:34
+ * @Description:
+ */
 import { color } from '@lzwme/fe-utils';
 import { toQueryString } from '@lzwme/fe-utils/cjs/common/url';
 import { logger } from './lib/helper';
@@ -14,9 +21,8 @@ export default (server: Whistle.PluginServer, options: Whistle.PluginOptions) =>
       if (util.isRemote(req)) return req.passThrough();
 
       const { method, headers, fullUrl: url } = req;
-      logger.trace('[request]', color.cyan(method), color.gray(url), headers);
-
       const reqHeaderRules = rulesManage.rules['req-header'];
+      logger.trace('[request]', color.cyan(method), color.gray(url));
 
       if (reqHeaderRules?.size > 0) {
         for (const rule of reqHeaderRules.values()) {
@@ -36,19 +42,19 @@ export default (server: Whistle.PluginServer, options: Whistle.PluginOptions) =>
 
           const mockRules = rulesManage.rules['req-body'];
           if (mockRules?.size > 0) {
-            reqBody = util.jsonParse(body) || body;
-
             for (const rule of mockRules.values()) {
               try {
-                const r = await ruleHandler({ req: ctx, rule, res, reqBody });
+                const r = await ruleHandler({ req: ctx, rule, res, reqBody: body });
                 if (r.body) return res.end(util.toBuffer(r.body));
                 if (r.reqBody) {
                   if (typeof r.reqBody === 'object' && !Buffer.isBuffer(r.reqBody)) {
                     r.reqBody = util.isJSON(headers, true) ? JSON.stringify(r.reqBody) : toQueryString(r.reqBody);
-                    // req.writeHead(0, { 'content-length': Buffer.from(r.reqBody).byteLength });
                   }
                   body = util.toBuffer(r.reqBody);
+                  // req.writeHead(0, { 'content-length': Buffer.from(r.reqBody).byteLength });
                 }
+
+                reqBody = r.reqBody || (ctx as any)._reqBody || body;
               } catch (e) {
                 logger.error('[ruleHandler]err', rule.ruleId, e);
               }
@@ -57,18 +63,13 @@ export default (server: Whistle.PluginServer, options: Whistle.PluginOptions) =>
 
           next({ body });
         },
-        async (buf, next, ctx) => {
-          const body = buf;
+        async (body, next, ctx) => {
           const resBodyRules = rulesManage.rules['res-body'];
 
           if (resBodyRules?.size > 0) {
-            let ubody = await new Promise(rs => util.unzipBody(ctx.headers, body, (_e, d) => rs(d)));
-            if (ubody && util.isText(ctx.headers)) ubody = String(ubody || '');
-            const resBody = util.isJSON(ctx.headers) || util.isJSON(headers) ? util.jsonParse(ubody) || ubody : ubody;
-
             for (const rule of resBodyRules.values()) {
               try {
-                const r = await ruleHandler({ rule, req, res: ctx, resBody, reqBody });
+                const r = await ruleHandler({ rule, req, res: ctx, resBody: body, reqBody });
                 if (r.body) return next({ body: Buffer.isBuffer(r.body) || typeof r.body === 'string' ? r.body : JSON.stringify(r.body) });
               } catch (e) {
                 logger.error('[ruleHandler]err', rule.ruleId, e);

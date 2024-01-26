@@ -2,24 +2,25 @@
  * @Author: renxia
  * @Date: 2024-01-10 16:58:26
  * @LastEditors: renxia
- * @LastEditTime: 2024-01-18 09:44:09
+ * @LastEditTime: 2024-02-07 09:35:59
  * @Description: 基于 whistle 的 cookie 自动抓取插件
  */
 
-import { type AnyObject, assign, color, cookieParse } from '@lzwme/fe-utils';
+import { assign, color, cookieParse } from '@lzwme/fe-utils';
 import micromatch from 'micromatch';
 import type { EnvConfig, RuleHandlerParams, RuleHandlerResult, RuleItem } from '../../typings';
 import { getConfig } from './getConfig';
 import { type CacheStorItem, getCacheStorage, logger } from './helper';
 import { updateEnvConfigFile, updateToQlEnvConfig } from './update';
 import { X } from './X';
+import * as util from '../util/util';
 
 type RuleHandlerOptions = {
   rule: RuleItem;
-  req: Whistle.PluginRequest | Whistle.PluginReqCtx;
-  res: Whistle.PluginResponse | Whistle.PluginResCtx;
-  reqBody?: Record<string, any> | Buffer;
-  resBody?: Record<string, any> | Buffer;
+  req: (Whistle.PluginRequest | Whistle.PluginReqCtx) & { _reqBody?: Buffer | Record<string, any> };
+  res: (Whistle.PluginResponse | Whistle.PluginResCtx) & { _resBody?: Buffer | Record<string, any> | string };
+  reqBody?: Buffer | Record<string, any> | string;
+  resBody?: Buffer;
 };
 
 function ruleMatcher({ rule, req }: RuleHandlerOptions) {
@@ -59,7 +60,32 @@ export async function ruleHandler({ rule, req, res, reqBody, resBody }: RuleHand
   const config = getConfig();
   const { headers, fullUrl: url } = req;
   const cookieObj = cookieParse(headers.cookie);
-  const params: RuleHandlerParams = { req, reqBody, resBody, headers, url, cookieObj, allCacheData: [], X };
+  const resHeaders = (res as Whistle.PluginResCtx).headers;
+
+  // decode reqBody
+  if (reqBody && !req._reqBody) {
+    if ('getJson' in req) {
+      req._reqBody = await new Promise(rs => req.getJson((err, json) => (err ? rs(util.jsonParse(reqBody) || reqBody) : rs(json))));
+    } else {
+      req._reqBody = util.jsonParse(reqBody) || reqBody;
+    }
+  }
+
+  // decode resBody
+  if (resBody && !res._resBody) {
+    if ('getJson' in res) {
+      res._resBody = await new Promise(rs => res.getJson((_err, json) => rs(json)));
+    }
+
+    if (!res._resBody) {
+      let ubody = await new Promise(rs => util.unzipBody(resHeaders, resBody, (_e, d) => rs(d)));
+      if (ubody && util.isText(resHeaders)) ubody = String(ubody || '');
+      res._resBody = util.isJSON(resHeaders) || util.isJSON(headers) ? util.jsonParse(ubody) || ubody : ubody;
+    }
+  }
+
+  const params: RuleHandlerParams = { req, reqBody: req._reqBody, resBody: res._resBody, headers, url, cookieObj, allCacheData: [], X };
+  if (resHeaders) params.resHeaders = resHeaders;
 
   if (rule.getCacheUid) {
     let uidData;
@@ -72,10 +98,11 @@ export async function ruleHandler({ rule, req, res, reqBody, resBody }: RuleHand
 
     if (uid) {
       const storage = getCacheStorage();
+      const now = Date.now();
       const cacheData: CacheStorItem = rule.ruleId ? storage.getItem(rule.ruleId) || {} : {};
 
       if (cacheData[uid]) {
-        if (Date.now() - cacheData[uid].update < 1000 * config.throttleTime!) {
+        if (now - cacheData[uid].update < 1000 * config.throttleTime!) {
           result.errmsg = `[throttle][${Date.now() - cacheData[uid].update}ms][${rule.ruleId}][${uid}] cache hit`;
           return result;
         }
@@ -83,17 +110,22 @@ export async function ruleHandler({ rule, req, res, reqBody, resBody }: RuleHand
         if (uidData && rule.mergeCache && typeof uidData === 'object') uidData = assign({}, cacheData[uid].data.data, uidData);
       }
 
-      cacheData[uid] = { update: Date.now(), data: { uid, headers: req.originalReq.headers, data: uidData } };
+      cacheData[uid] = { update: now, data: { uid, headers: req.originalReq.headers, data: uidData } };
+
+      params.allCacheData = [];
+      const cacheDuration = 1000 * (Number(rule.cacheDuration || config.cacheDuration) || 60 * 60 * 12);
+      for (const [key, value] of Object.entries(cacheData)) {
+        if (now - value.update > cacheDuration) delete cacheData[key];
+        else params.allCacheData.push(value.data);
+      }
+
       storage.setItem(rule.ruleId, cacheData);
-      params.allCacheData = Object.values(cacheData).map(d => (d as AnyObject).data);
     } else {
       result.errmsg = '[rule.getCacheUid] `uid` is required';
       return result;
     }
   }
 
-  const resHeaders = (res as Whistle.PluginResCtx).headers;
-  if (resHeaders) params.resHeaders = resHeaders;
   const r = await rule.handler(params);
   if (r) {
     if (typeof r === 'string' || Buffer.isBuffer(r)) result.body = r;
@@ -108,10 +140,11 @@ export async function ruleHandler({ rule, req, res, reqBody, resBody }: RuleHand
 
     if (result.envConfig) {
       (Array.isArray(result.envConfig) ? result.envConfig : [result.envConfig]).forEach(async envConfig => {
-        if (!envConfig?.name) return;
+        if (!envConfig || !('value' in envConfig)) return;
 
+        if (!envConfig.name) envConfig.name = rule.ruleId;
         if (!envConfig.desc) envConfig.desc = rule.desc;
-        if (config.qlHost && rule.toQL !== false) await updateToQlEnvConfig(envConfig, rule.updateEnvValue);
+        if (config.ql?.enable !== false && rule.toQL !== false) await updateToQlEnvConfig(envConfig, rule.updateEnvValue);
         if (config.envConfFile && rule.toEnvFile !== false) updateEnvConfigFile(envConfig, rule.updateEnvValue, config.envConfFile);
       });
     }

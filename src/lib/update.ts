@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 13:38:34
  * @LastEditors: renxia
- * @LastEditTime: 2024-01-23 08:44:19
+ * @LastEditTime: 2024-02-04 22:16:42
  * @Description:
  */
 import fs from 'node:fs';
@@ -14,16 +14,18 @@ import { X } from './X';
 import { QingLoing, type QLResponse, type QLEnvItem } from './QingLong';
 
 const { green, magenta, gray, cyan } = color;
-const updateCache = { qlEnvList: [] as QLEnvItem[] };
+const updateCache = { qlEnvList: [] as QLEnvItem[], updateTime: 0 };
 
 export async function updateToQlEnvConfig({ name, value, desc }: EnvConfig, updateEnvValue?: RuleItem['updateEnvValue']) {
   const config = getConfig();
-  const ql = QingLoing.getInstance({ token: config.qlToken, host: config.qlHost });
+  const ql = QingLoing.getInstance(config.ql);
   if (!(await ql.login())) return;
 
+  if (Date.now() - updateCache.updateTime > 1000 * 60 * 60 * 1) updateCache.qlEnvList = [];
   let item = updateCache.qlEnvList.find(d => d.name === name);
   if (!item) {
     updateCache.qlEnvList = await ql.getEnvList();
+    updateCache.updateTime = Date.now();
     item = updateCache.qlEnvList.find(d => d.name === name);
   }
 
@@ -45,9 +47,9 @@ export async function updateToQlEnvConfig({ name, value, desc }: EnvConfig, upda
 
     params.id = item.id;
     params.remarks = desc || item.remarks || '';
-    r = await ql.addEnv(params as QLEnvItem);
+    r = await ql.updateEnv(params as QLEnvItem);
   } else {
-    r = await ql.updateEnv([params as QLEnvItem]);
+    r = await ql.addEnv([params as QLEnvItem]);
   }
 
   const isSuccess = r.code === 200;

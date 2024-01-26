@@ -2,11 +2,12 @@
  * @Author: renxia
  * @Date: 2024-01-11 16:53:50
  * @LastEditors: renxia
- * @LastEditTime: 2024-01-23 16:46:11
+ * @LastEditTime: 2024-02-07 09:34:54
  * @Description:
  */
 /// <reference path="global.d.ts" />
 
+import type * as FeUtils from '@lzwme/fe-utils';
 type IncomingHttpHeaders = import('http').IncomingHttpHeaders;
 
 export interface W2XScriptsConfig {
@@ -14,16 +15,29 @@ export interface W2XScriptsConfig {
   debug?: boolean;
   /** 日志级别。默认为 info */
   logType?: import('@lzwme/fe-utils').LogLevelType;
-  /** 青龙服务地址。用于上传环境变量，若设置为空则不上传 */
-  qlHost?: string;
-  /** 青龙服务 token。用于创建或更新 QL 环境变量配置。会自动尝试从 /ql/data/config/auth.json 文件中获取 */
-  qlToken?: string;
+  /** 青龙脚本相关配置 */
+  ql?: {
+    /** 是否开启青龙面板上传。默认为 true */
+    enable?: boolean;
+    /** 青龙服务地址。用于上传环境变量，若设置为空则不上传 */
+    host?: string;
+    /** 青龙服务 token。用于创建或更新 QL 环境变量配置。会自动尝试从 /ql/data/config/auth.json 文件中获取 */
+    token?: string;
+    /** 登录用户名 */
+    username?: string;
+    /** 登录密码 */
+    password?: string;
+    /** 两步验证秘钥。若开启了两步验证则需设置 */
+    twoFactorSecret?: string;
+  };
   /** 写入环境变量信息到本地文件的路径。若设置为空则不写入 */
   envConfFile?: string;
   /** 缓存数据保存路径 */
   cacheFile?: string;
   /** 数据处理防抖时间间隔。单位为秒，默认为 10 (s) */
   throttleTime?: number;
+  /** 缓存数据有效时长。单位秒。默认为 12 小时（12 * 60 * 60） */
+  cacheDuration?: number;
   /** 自定义脚本规则 */
   rules?: RuleItem[];
   /** 指定规则集文件路径或所在目录，尝试从该列表加载自定义的规则集 */
@@ -72,6 +86,8 @@ export interface RuleItem {
   toEnvFile?: boolean;
   /** [getCacheUid]是否合并不同请求的缓存数据(多个请求抓取的数据合并一起)。默认为 false 覆盖 */
   mergeCache?: boolean;
+  /** 缓存数据有效时长。单位秒。默认为一天。优先级大于全局设置 */
+  cacheDuration?: number;
   /** 文件来源。内置赋值参数，主要用于调试 */
   _source?: string;
   /** 获取当前用户唯一性的 uid，及自定义需缓存的数据 data(可选) */
@@ -100,7 +116,9 @@ export type RuleGetUUidCtx = {
 export type RuleHandlerParams = {
   req: Whistle.PluginRequest | Whistle.PluginReqCtx;
   /** 封装的工具方法 */
-  X: Record<string, any>;
+  X: Record<string, any> & {
+    FeUtils: typeof FeUtils;
+  };
   /** 请求 url 完整地址 */
   url: string;
   /** req.headers */
@@ -128,8 +146,8 @@ export type RuleHandlerResult<T = any> = {
 };
 
 export interface EnvConfig {
-  /** 环境变量名称 */
-  name: string;
+  /** 环境变量名称。默认取值 ruleId 参数 */
+  name?: string;
   /** 环境变量值 */
   value: string;
   desc?: string;

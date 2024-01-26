@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 13:17:00
  * @LastEditors: renxia
- * @LastEditTime: 2024-01-22 14:30:54
+ * @LastEditTime: 2024-02-07 09:10:02
  * @Description:
  */
 import type { W2XScriptsConfig } from '../../typings';
@@ -16,10 +16,16 @@ import { rulesManage } from './rulesManage';
 const config: W2XScriptsConfig = {
   debug: Boolean(process.env.DEBUG),
   logType: process.env.LOG_TYPE as never,
-  qlHost: process.env.QL_HOST || 'http://127.0.0.1:5700',
-  qlToken: '',
+  ql: {
+    host: process.env.QL_HOST || 'http://127.0.0.1:5700',
+    token: process.env.QL_TOKEN || '',
+    username: process.env.QL_USERNAME || '',
+    password: process.env.QL_PASSWORD || '',
+    twoFactorSecret: process.env.QL_2FA_SECRET || '',
+  },
   envConfFile: 'env-config.sh',
   cacheFile: 'w2.x-scripts.cache.json',
+  cacheDuration: 60 * 60 * 12,
   rules: [],
 };
 let isLoaded = false;

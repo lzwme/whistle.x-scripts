@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { color } from '@lzwme/fe-utils';
 import { logger } from './helper';
 import type { RuleRunOnType, RuleItem, W2XScriptsConfig } from '../../typings';
+import { getConfig } from './getConfig';
 
 const { green, cyan, magenta, magentaBright, greenBright } = color;
 const RulesCache: Partial<Record<RuleRunOnType | 'all', Map<string, RuleItem>>> = { all: new Map() };
@@ -42,10 +43,11 @@ function classifyRules(rules: RuleItem[], config: W2XScriptsConfig, isInit = fal
     if (!rule || !ruleFormat(rule)) return;
     RulesCache.all.set(rule.ruleId, rule);
 
-    const disabled = rule.disabled || ruleExclude.includes(rule.ruleId) || (ruleInclude.length && !ruleInclude.includes(rule.ruleId));
+    let disabled = rule.disabled;
+    if (disabled == null) disabled = ruleExclude.includes(rule.ruleId) || (ruleInclude.length && !ruleInclude.includes(rule.ruleId));
 
     if (disabled) {
-      logger.log(`规则已${rule.disabled ? '禁用' : '过滤'}: [${rule.on}][${rule.ruleId}][${rule.desc}]`);
+      logger.log(`规则已${rule.disabled ? color.red('禁用') : color.gray('过滤')}: [${rule.on}][${rule.ruleId}][${rule.desc}]`);
       if (RulesCache[rule.on]?.has(rule.ruleId)) RulesCache[rule.on]!.delete(rule.ruleId);
       return;
     }
@@ -116,9 +118,19 @@ function loadRules(filepaths: string[] = [], isInit = false) {
   return rules;
 }
 
+function changeRuleStatus(rule: RuleItem, status: boolean, config = getConfig()) {
+  if (typeof rule === 'string') rule = RulesCache.all.get(rule);
+  if (!rule?.ruleId || !RulesCache.all.has(rule.ruleId)) return false;
+
+  rule.disabled = status;
+  classifyRules([rule], config, false);
+  return true;
+}
+
 export const rulesManage = {
   rules: RulesCache,
   ruleFormat,
   classifyRules,
   loadRules,
+  changeRuleStatus,
 };

@@ -245,7 +245,8 @@ export function jsonParse(body: any) {
   try {
     if (body) {
       if (!Buffer.isBuffer(body) && typeof body === 'object') return body;
-      return JSON.parse(body.toString()) || '';
+      const text = body.toString().trim();
+      if (text[0] === '[' || text[0] === '{') return JSON.parse(text);
     }
   } catch (e) {}
 }

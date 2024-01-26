@@ -1,6 +1,13 @@
+/*
+ * @Author: renxia
+ * @Date: 2024-01-22 14:00:13
+ * @LastEditors: renxia
+ * @LastEditTime: 2024-01-29 15:45:36
+ * @Description:
+ */
 /** @type {import('@lzwme/whistle.x-scripts').RuleItem} */
 module.exports = {
-  disabled: true, // 是否禁用该规则
+  // disabled: true, // 是否禁用该规则
   on: 'res-body', // 规则执行的时机，res-body 表示在收到响应体后触发
   ruleId: 'print-response-body', // 规则唯一标记，必须设置且唯一
   desc: '打印接口返回内容', // 规则描述
@@ -13,9 +20,9 @@ module.exports = {
       const { magenta, gray, cyan } = X.FeUtils.color;
 
       console.log(`\n\n[${magenta('handler')}][${cyan(req.method)}] -`, gray(url));
-      console.log(cyan('\req headers:'), req.headers);
-      console.log(cyan('\res headers:'), resHeaders);
-      if (reqBody) console.log(cyan('请求参数：'), reqBody.toString());
+      console.log(cyan('req headers:'), req.headers);
+      console.log(cyan('res headers:'), resHeaders);
+      if (reqBody) console.log(cyan('请求参数：'), reqBody);
       if (resBody) console.log(cyan('返回内容：'), resBody);
     }
 
