@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 16:53:50
  * @LastEditors: renxia
- * @LastEditTime: 2024-02-07 09:34:54
+ * @LastEditTime: 2024-02-07 15:41:01
  * @Description:
  */
 /// <reference path="global.d.ts" />
@@ -13,6 +13,8 @@ type IncomingHttpHeaders = import('http').IncomingHttpHeaders;
 export interface W2XScriptsConfig {
   /** 是否开启调试模式。默认读取环境变量 DEBUG */
   debug?: boolean;
+  /** 是否开启监听模式。若为 number 则设置监听定时器的时间间隔，单位为 ms。默认为 30000 */
+  watch?: boolean | number;
   /** 日志级别。默认为 info */
   logType?: import('@lzwme/fe-utils').LogLevelType;
   /** 青龙脚本相关配置 */

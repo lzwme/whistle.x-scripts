@@ -4,6 +4,7 @@ import { color } from '@lzwme/fe-utils';
 import { logger } from './helper';
 import type { RuleRunOnType, RuleItem, W2XScriptsConfig } from '../../typings';
 import { getConfig } from './getConfig';
+import { Watcher, WatcherOnChange } from './watch';
 
 const { green, cyan, magenta, magentaBright, greenBright } = color;
 const RulesCache: Partial<Record<RuleRunOnType | 'all', Map<string, RuleItem>>> = { all: new Map() };
@@ -74,17 +75,23 @@ function loadRules(filepaths: string[] = [], isInit = false) {
   const findRuleFiles = (filepath: string) => {
     if (!filepath || typeof filepath !== 'string' || !existsSync(filepath)) return;
 
+    filepath = resolve(process.cwd(), filepath);
+
     if (statSync(filepath).isDirectory()) {
       readdirSync(filepath)
         .filter(d => /rules|src|(\.c?js)$/.test(d))
         .forEach(d => findRuleFiles(resolve(filepath, d)));
     } else if (/\.c?js/.test(filepath)) {
-      filesSet.add(resolve(process.cwd(), filepath));
+      filesSet.add(filepath);
+      Watcher.add(filepath, onRuleFileChange);
     }
   };
 
   // 合入当前目录下名称包含 `x-scripts-rule` 的文件或目录
-  new Set(filepaths.filter(Boolean).map(d => resolve(d))).forEach(d => findRuleFiles(d));
+  new Set(filepaths.filter(Boolean).map(d => resolve(d))).forEach(d => {
+    findRuleFiles(d);
+    Watcher.add(d, onRuleFileChange);
+  });
 
   const rules = new Set<RuleItem>();
   for (let filepath of filesSet) {
@@ -127,10 +134,30 @@ function changeRuleStatus(rule: RuleItem, status: boolean, config = getConfig())
   return true;
 }
 
+const onRuleFileChange: WatcherOnChange = (type, filepath) => {
+  if (type === 'del') {
+    let count = 0;
+    for (const item of Object.values(rulesManage.rules)) {
+      for (const [key, rule] of item) {
+        if (rule._source === filepath) {
+          item.delete(key);
+          count++;
+        }
+      }
+    }
+
+    logger.info(`文件已删除: ${color.yellow(filepath)}，删除了 ${color.cyan(count)} 条规则。`);
+  } else {
+    const rules = rulesManage.loadRules([filepath], false);
+    logger.info(`文件${type === 'add' ? '新增' : '修改'}: ${color.yellow(filepath)}，更新了条 ${color.cyan(rules.size)} 规则`);
+  }
+};
+
 export const rulesManage = {
   rules: RulesCache,
   ruleFormat,
   classifyRules,
   loadRules,
   changeRuleStatus,
+  // onRuleFileChange,
 };

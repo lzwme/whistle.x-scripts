@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 13:17:00
  * @LastEditors: renxia
- * @LastEditTime: 2024-02-07 09:10:02
+ * @LastEditTime: 2024-02-07 15:40:34
  * @Description:
  */
 import type { W2XScriptsConfig } from '../../typings';
@@ -12,9 +12,11 @@ import { homedir } from 'node:os';
 import { assign, color } from '@lzwme/fe-utils';
 import { logger } from './helper';
 import { rulesManage } from './rulesManage';
+import { Watcher } from './watch';
 
 const config: W2XScriptsConfig = {
   debug: Boolean(process.env.DEBUG),
+  watch: 30000,
   logType: process.env.LOG_TYPE as never,
   ql: {
     host: process.env.QL_HOST || 'http://127.0.0.1:5700',
@@ -47,6 +49,14 @@ export function getConfig(useCache = true) {
         assign(config, require(configFilePath));
         config.rules.forEach(d => (d._source = configFilePath));
         logger.info('配置文件加载成功', color.cyan(configFilePath));
+
+        Watcher.add(configFilePath, type => {
+          if (type === 'update') {
+            logger.info('配置文件更新', color.cyan(configFilePath));
+            delete require.cache[require.resolve(configFilePath)];
+            getConfig(false);
+          }
+        });
         return true;
       } catch (e) {
         logger.error('配置文件加载失败', color.red(configFilePath));
@@ -77,6 +87,7 @@ export function getConfig(useCache = true) {
     rulesManage.classifyRules([...allRules], config, !isLoaded);
 
     isLoaded = true;
+    config.watch ? Watcher.start() : Watcher.stop();
   }
 
   return config;

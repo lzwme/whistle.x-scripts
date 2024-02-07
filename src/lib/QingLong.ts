@@ -70,7 +70,7 @@ export class QingLoing {
       if (this.config.token) {
         this.req.setHeaders({ Authorization: `Bearer ${this.config.token}` });
         this.loginStatus = 1;
-      } else  {
+      } else {
         logger.warn('请在配置文件中配置 ql 相关变量');
         this.loginStatus--;
       }

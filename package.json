@@ -50,11 +50,11 @@
   "devDependencies": {
     "@lzwme/fe-utils": "^1.6.0",
     "@lzwme/fed-lint-helper": "^2.5.2",
-    "@types/node": "^20.11.5",
+    "@types/node": "^20.11.19",
     "base64-js": "^1.5.1",
     "crypto-js": "^4.2.0",
-    "husky": "^8.0.3",
-    "prettier": "^3.2.4",
+    "husky": "^9.0.11",
+    "prettier": "^3.2.5",
     "standard-version": "^9.5.0",
     "typescript": "^5.3.3"
   }
