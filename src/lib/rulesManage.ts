@@ -93,21 +93,22 @@ function loadRules(filepaths: string[] = [], isInit = false) {
     Watcher.add(d, onRuleFileChange);
   });
 
-  const rules = new Set<RuleItem>();
+  const rules = new Map<string, RuleItem>();
   for (let filepath of filesSet) {
     try {
+      delete require.cache[require.resolve(filepath)];
       const rule = require(filepath);
       if (!rule) continue;
       if (Array.isArray(rule))
         rule.forEach((d: RuleItem) => {
-          if (!rules.has(d) && ruleFormat(d)) {
+          if (ruleFormat(d) && !rules.has(d.ruleId)) {
             if (!d._source) d._source = filepath;
-            rules.add(d);
+            rules.set(d.ruleId, d);
           }
         });
-      else if (typeof rule === 'object' && !rules.has(rule) && ruleFormat(rule)) {
+      else if (typeof rule === 'object' && ruleFormat(rule) && !rules.has(rule.ruleId)) {
         if (!rule._source) rule._source = filepath;
-        rules.add(rule);
+        rules.set(rule.ruleId, rule);
       }
     } catch (e) {
       logger.debug('尝试从文件加载规则失败：', filepath, e.message);
@@ -116,7 +117,7 @@ function loadRules(filepaths: string[] = [], isInit = false) {
 
   if (isInit && rules.size) {
     logger.debug(
-      `加载的规则：\n - ${[...rules].map(d => `[${green(d.ruleId)}]${d.desc || d.url}`).join('\n - ')}`,
+      `加载的规则：\n - ${[...rules].map(([ruleId, d]) => `[${green(ruleId)}]${d.desc || d.url}`).join('\n - ')}`,
       `\n加载的文件：\n - ${[...filesSet].join('\n - ')}`
     );
     logger.info(`从 ${cyan(filesSet.size)} 个文件中发现了 ${greenBright(rules.size)} 个自定义规则`);
@@ -148,7 +149,8 @@ const onRuleFileChange: WatcherOnChange = (type, filepath) => {
 
     logger.info(`文件已删除: ${color.yellow(filepath)}，删除了 ${color.cyan(count)} 条规则。`);
   } else {
-    const rules = rulesManage.loadRules([filepath], false);
+    const rules = loadRules([filepath], false);
+    if (rules.size) classifyRules([...rules.values()], getConfig(), false);
     logger.info(`文件${type === 'add' ? '新增' : '修改'}: ${color.yellow(filepath)}，更新了条 ${color.cyan(rules.size)} 规则`);
   }
 };

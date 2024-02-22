@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 13:17:00
  * @LastEditors: renxia
- * @LastEditTime: 2024-02-07 15:40:34
+ * @LastEditTime: 2024-02-22 21:39:14
  * @Description:
  */
 import type { W2XScriptsConfig } from '../../typings';
@@ -81,10 +81,10 @@ export function getConfig(useCache = true) {
 
     const allRules = rulesManage.loadRules(config.ruleDirs, !isLoaded);
     config.rules.forEach(d => {
-      if (Array.isArray(d)) d.forEach(d => allRules.add(d));
-      else allRules.add(d);
+      if (Array.isArray(d)) d.forEach(d => d.ruleId && allRules.set(d.ruleId, d));
+      else if (d?.ruleId) allRules.set(d.ruleId, d);
     });
-    rulesManage.classifyRules([...allRules], config, !isLoaded);
+    rulesManage.classifyRules([...allRules.values()], config, !isLoaded);
 
     isLoaded = true;
     config.watch ? Watcher.start() : Watcher.stop();

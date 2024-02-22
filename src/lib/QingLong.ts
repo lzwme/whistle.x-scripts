@@ -106,6 +106,7 @@ export class QingLoing {
       logger.error('[updateToQL]获取环境变量列表失败！', data);
       return [];
     }
+    logger.log('[QL]查询环境变量列表：', data.data?.length);
 
     return data.data || [];
   }
