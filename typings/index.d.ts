@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 16:53:50
  * @LastEditors: renxia
- * @LastEditTime: 2024-02-07 15:41:01
+ * @LastEditTime: 2024-02-28 14:16:24
  * @Description:
  */
 /// <reference path="global.d.ts" />
@@ -95,7 +95,7 @@ export interface RuleItem {
   /** 获取当前用户唯一性的 uid，及自定义需缓存的数据 data(可选) */
   getCacheUid?: string | ((ctx: RuleHandlerParams) => string | { uid: string; data: any } | undefined);
   /** [envConfig]更新处理已存在的环境变量，返回合并后的结果。若无需修改则可返回空 */
-  updateEnvValue?: (envConfig: EnvConfig, oldValue: string, X: any) => string | undefined;
+  updateEnvValue?: (envConfig: EnvConfig, oldValue: string, X: RuleHandlerParams['X']) => string | undefined;
   /** <${type}>handler 简写。根据 type 类型自动识别 */
   handler?: (ctx: RuleHandlerParams) => PromiseMaybe<RuleHandlerResult>;
   // /** 规则处理并返回环境变量配置。可以数组的形式返回多个 */
@@ -120,6 +120,13 @@ export type RuleHandlerParams = {
   /** 封装的工具方法 */
   X: Record<string, any> & {
     FeUtils: typeof FeUtils;
+    logger: FeUtils.NLogger;
+    cookieParse: (cookie?: string, filterNilValue?: boolean) => Record<string, string>;
+    isText: (headers: IncomingHttpHeaders) => boolean;
+    isBinary: (headers: IncomingHttpHeaders) => boolean;
+    isJSON: (headers: IncomingHttpHeaders, isStrict?: boolean) => boolean;
+    toBuffer(body: unknown): Buffer;
+
   };
   /** 请求 url 完整地址 */
   url: string;

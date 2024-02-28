@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-22 14:00:13
  * @LastEditors: renxia
- * @LastEditTime: 2024-01-26 09:09:34
+ * @LastEditTime: 2024-02-28 16:00:10
  * @Description:
  */
 import { color } from '@lzwme/fe-utils';
@@ -28,7 +28,7 @@ export default (server: Whistle.PluginServer, options: Whistle.PluginOptions) =>
         for (const rule of reqHeaderRules.values()) {
           try {
             const r = await ruleHandler({ req, rule, res });
-            if (r.body) return res.end(util.toBuffer(r.body));
+            if (r.body != null) return res.end(util.toBuffer(r.body) || '');
           } catch (e) {
             logger.error('[ruleHandler]err', rule.ruleId, e);
           }
@@ -45,7 +45,7 @@ export default (server: Whistle.PluginServer, options: Whistle.PluginOptions) =>
             for (const rule of mockRules.values()) {
               try {
                 const r = await ruleHandler({ req: ctx, rule, res, reqBody: body });
-                if (r.body) return res.end(util.toBuffer(r.body));
+                if (r.body != null) return res.end(util.toBuffer(r.body) || '');
                 if (r.reqBody) {
                   if (typeof r.reqBody === 'object' && !Buffer.isBuffer(r.reqBody)) {
                     r.reqBody = util.isJSON(headers, true) ? JSON.stringify(r.reqBody) : toQueryString(r.reqBody);
@@ -70,7 +70,9 @@ export default (server: Whistle.PluginServer, options: Whistle.PluginOptions) =>
             for (const rule of resBodyRules.values()) {
               try {
                 const r = await ruleHandler({ rule, req, res: ctx, resBody: body, reqBody });
-                if (r.body) return next({ body: Buffer.isBuffer(r.body) || typeof r.body === 'string' ? r.body : JSON.stringify(r.body) });
+                if (r.body != null) {
+                  return next({ body: Buffer.isBuffer(r.body) || typeof r.body === 'string' ? r.body : JSON.stringify(r.body) });
+                }
               } catch (e) {
                 logger.error('[ruleHandler]err', rule.ruleId, e);
               }

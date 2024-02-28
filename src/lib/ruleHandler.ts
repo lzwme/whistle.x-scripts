@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-10 16:58:26
  * @LastEditors: renxia
- * @LastEditTime: 2024-02-07 09:35:59
+ * @LastEditTime: 2024-02-28 22:35:59
  * @Description: 基于 whistle 的 cookie 自动抓取插件
  */
 
@@ -113,9 +113,9 @@ export async function ruleHandler({ rule, req, res, reqBody, resBody }: RuleHand
       cacheData[uid] = { update: now, data: { uid, headers: req.originalReq.headers, data: uidData } };
 
       params.allCacheData = [];
-      const cacheDuration = 1000 * (Number(rule.cacheDuration || config.cacheDuration) || 60 * 60 * 12);
+      const cacheDuration = 1000 * (Number(rule.cacheDuration || config.cacheDuration) || (rule.updateEnvValue ? 12 : 24 * 10) * 3600);
       for (const [key, value] of Object.entries(cacheData)) {
-        if (now - value.update > cacheDuration) delete cacheData[key];
+        if (cacheDuration && now - value.update > cacheDuration) delete cacheData[key];
         else params.allCacheData.push(value.data);
       }
 

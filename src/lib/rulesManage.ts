@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { color } from '@lzwme/fe-utils';
+import { clearRequireCache, color } from '@lzwme/fe-utils';
 import { logger } from './helper';
 import type { RuleRunOnType, RuleItem, W2XScriptsConfig } from '../../typings';
 import { getConfig } from './getConfig';
@@ -79,7 +79,7 @@ function loadRules(filepaths: string[] = [], isInit = false) {
 
     if (statSync(filepath).isDirectory()) {
       readdirSync(filepath)
-        .filter(d => /rules|src|(\.c?js)$/.test(d))
+        .filter(d => /rules|src|vip|active|(\.c?js)$/.test(d))
         .forEach(d => findRuleFiles(resolve(filepath, d)));
     } else if (/\.c?js/.test(filepath)) {
       filesSet.add(filepath);
@@ -96,7 +96,7 @@ function loadRules(filepaths: string[] = [], isInit = false) {
   const rules = new Map<string, RuleItem>();
   for (let filepath of filesSet) {
     try {
-      delete require.cache[require.resolve(filepath)];
+      clearRequireCache(filepath);
       const rule = require(filepath);
       if (!rule) continue;
       if (Array.isArray(rule))
