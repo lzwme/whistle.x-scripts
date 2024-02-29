@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-10 16:58:26
  * @LastEditors: renxia
- * @LastEditTime: 2024-02-28 22:35:59
+ * @LastEditTime: 2024-02-29 22:13:44
  * @Description: 基于 whistle 的 cookie 自动抓取插件
  */
 
@@ -17,7 +17,7 @@ import * as util from '../util/util';
 
 type RuleHandlerOptions = {
   rule: RuleItem;
-  req: (Whistle.PluginRequest | Whistle.PluginReqCtx) & { _reqBody?: Buffer | Record<string, any> };
+  req: (Whistle.PluginServerRequest | Whistle.PluginReqCtx) & { _reqBody?: Buffer | Record<string, any> };
   res: (Whistle.PluginResponse | Whistle.PluginResCtx) & { _resBody?: Buffer | Record<string, any> | string };
   reqBody?: Buffer | Record<string, any> | string;
   resBody?: Buffer;

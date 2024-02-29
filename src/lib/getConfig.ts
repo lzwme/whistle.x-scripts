@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 13:17:00
  * @LastEditors: renxia
- * @LastEditTime: 2024-02-22 21:39:14
+ * @LastEditTime: 2024-02-29 22:12:47
  * @Description:
  */
 import type { W2XScriptsConfig } from '../../typings';
@@ -13,6 +13,7 @@ import { assign, color } from '@lzwme/fe-utils';
 import { logger } from './helper';
 import { rulesManage } from './rulesManage';
 import { Watcher } from './watch';
+import { handlerRuleFiles } from '../rulesServer';
 
 const config: W2XScriptsConfig = {
   debug: Boolean(process.env.DEBUG),
@@ -29,6 +30,7 @@ const config: W2XScriptsConfig = {
   cacheFile: 'w2.x-scripts.cache.json',
   cacheDuration: 60 * 60 * 12,
   rules: [],
+  whistleRules: [],
 };
 let isLoaded = false;
 
@@ -76,8 +78,19 @@ export function getConfig(useCache = true) {
     config.throttleTime = Math.max(1, +config.throttleTime || 10);
 
     if (!Array.isArray(config.ruleDirs)) config.ruleDirs = [config.ruleDirs as never as string];
+
     if (basename(process.cwd()).includes('x-scripts-rules')) config.ruleDirs.push(process.cwd());
-    readdirSync(process.cwd()).forEach(d => d.includes('x-scripts-rule') && config.ruleDirs!.push(d));
+    if (basename(process.cwd()).includes('whistle-rules')) config.whistleRules.push(process.cwd());
+
+    readdirSync(process.cwd()).forEach(d => {
+      if (d.includes('x-scripts-rules')) {
+        config.ruleDirs.push(d);
+
+        if (statSync(d).isDirectory()) {
+          readdirSync(d).forEach(filename => filename.includes('whistle-rule') && config.whistleRules.push(resolve(d, filename)));
+        }
+      }
+    });
 
     const allRules = rulesManage.loadRules(config.ruleDirs, !isLoaded);
     config.rules.forEach(d => {
@@ -85,6 +98,8 @@ export function getConfig(useCache = true) {
       else if (d?.ruleId) allRules.set(d.ruleId, d);
     });
     rulesManage.classifyRules([...allRules.values()], config, !isLoaded);
+
+    config.whistleRules.forEach(d => handlerRuleFiles(d));
 
     isLoaded = true;
     config.watch ? Watcher.start() : Watcher.stop();

@@ -83,14 +83,14 @@ function loadRules(filepaths: string[] = [], isInit = false) {
         .forEach(d => findRuleFiles(resolve(filepath, d)));
     } else if (/\.c?js/.test(filepath)) {
       filesSet.add(filepath);
-      Watcher.add(filepath, onRuleFileChange);
+      Watcher.add(filepath, onRuleFileChange, false);
     }
   };
 
   // 合入当前目录下名称包含 `x-scripts-rule` 的文件或目录
   new Set(filepaths.filter(Boolean).map(d => resolve(d))).forEach(d => {
     findRuleFiles(d);
-    Watcher.add(d, onRuleFileChange);
+    Watcher.add(d, onRuleFileChange, false);
   });
 
   const rules = new Map<string, RuleItem>();
@@ -138,11 +138,11 @@ function changeRuleStatus(rule: RuleItem, status: boolean, config = getConfig())
 const onRuleFileChange: WatcherOnChange = (type, filepath) => {
   if (type === 'del') {
     let count = 0;
-    for (const item of Object.values(rulesManage.rules)) {
+    for (const [type, item] of Object.entries(rulesManage.rules)) {
       for (const [key, rule] of item) {
         if (rule._source === filepath) {
           item.delete(key);
-          count++;
+          if (type === 'all') count++;
         }
       }
     }

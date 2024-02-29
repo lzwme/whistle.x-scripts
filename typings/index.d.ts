@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 16:53:50
  * @LastEditors: renxia
- * @LastEditTime: 2024-02-28 14:16:24
+ * @LastEditTime: 2024-02-29 19:50:35
  * @Description:
  */
 /// <reference path="global.d.ts" />
@@ -48,6 +48,8 @@ export interface W2XScriptsConfig {
   ruleInclude?: string[];
   /** 排除/禁用的 ruleId。若设置，则在该列表中的 ruleId 会被过滤 */
   ruleExclude?: string[];
+  /** whistle rules 规则列表。可以是本地文件、远程 url、返回规则的自定义函数(仅初始化时执行一次) */
+  whistleRules?: (string | (() => Promise<string> | string))[];
 }
 
 // export type RuleType = 'saveCookie' | 'mock' | 'modify';
@@ -112,11 +114,11 @@ export type RuleGetUUidCtx = {
   headers: IncomingHttpHeaders;
   url: string;
   cookieObj: Record<string, string>;
-  req: Whistle.PluginRequest;
+  req: Whistle.PluginServerRequest;
 };
 
 export type RuleHandlerParams = {
-  req: Whistle.PluginRequest | Whistle.PluginReqCtx;
+  req: Whistle.PluginServerRequest | Whistle.PluginReqCtx;
   /** 封装的工具方法 */
   X: Record<string, any> & {
     FeUtils: typeof FeUtils;
@@ -126,7 +128,6 @@ export type RuleHandlerParams = {
     isBinary: (headers: IncomingHttpHeaders) => boolean;
     isJSON: (headers: IncomingHttpHeaders, isStrict?: boolean) => boolean;
     toBuffer(body: unknown): Buffer;
-
   };
   /** 请求 url 完整地址 */
   url: string;
