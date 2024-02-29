@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.3](https://github.com/lzwme/whistle.x-scripts/compare/v0.0.2...v0.0.3) (2024-02-29)
+
+
+### Bug Fixes
+
+* 修复规则热更新不生效的问题 ([93ca442](https://github.com/lzwme/whistle.x-scripts/commit/93ca44242723741fe949fb9c8093567afb7b6734))
+
 ### [0.0.2](https://github.com/lzwme/whistle.x-scripts/compare/v0.0.1...v0.0.2) (2024-02-18)
 
 
