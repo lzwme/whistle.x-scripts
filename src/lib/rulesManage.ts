@@ -135,18 +135,27 @@ function changeRuleStatus(rule: RuleItem, status: boolean, config = getConfig())
   return true;
 }
 
-const onRuleFileChange: WatcherOnChange = (type, filepath) => {
-  if (type === 'del') {
-    let count = 0;
-    for (const [type, item] of Object.entries(rulesManage.rules)) {
-      for (const [key, rule] of item) {
-        if (rule._source === filepath) {
-          item.delete(key);
-          if (type === 'all') count++;
-        }
+function removeRule(ruleId?: string[], filepath?: string[]) {
+  let count = 0;
+  if (!ruleId && !filepath) return count;
+  const ruleSet = new Set(ruleId ? ruleId : []);
+  const fileSet = new Set(filepath ? filepath : []);
+
+  for (const [type, item] of Object.entries(rulesManage.rules)) {
+    for (const [ruleId, rule] of item) {
+      if (ruleSet.has(ruleId) || fileSet.has(rule._source)) {
+        item.delete(ruleId);
+        if (type === 'all') count++;
       }
     }
+  }
 
+  return count;
+}
+
+const onRuleFileChange: WatcherOnChange = (type, filepath) => {
+  if (type === 'del') {
+    const count = removeRule(void 0, [filepath]);
     logger.info(`文件已删除: ${color.yellow(filepath)}，删除了 ${color.cyan(count)} 条规则。`);
   } else {
     const rules = loadRules([filepath], false);
@@ -161,5 +170,6 @@ export const rulesManage = {
   classifyRules,
   loadRules,
   changeRuleStatus,
+  removeRule,
   // onRuleFileChange,
 };

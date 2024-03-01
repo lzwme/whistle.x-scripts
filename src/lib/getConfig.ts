@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 13:17:00
  * @LastEditors: renxia
- * @LastEditTime: 2024-02-29 22:12:47
+ * @LastEditTime: 2024-03-01 16:38:28
  * @Description:
  */
 import type { W2XScriptsConfig } from '../../typings';
@@ -13,7 +13,7 @@ import { assign, color } from '@lzwme/fe-utils';
 import { logger } from './helper';
 import { rulesManage } from './rulesManage';
 import { Watcher } from './watch';
-import { handlerRuleFiles } from '../rulesServer';
+import { loadW2Rules } from './w2RulesManage';
 
 const config: W2XScriptsConfig = {
   debug: Boolean(process.env.DEBUG),
@@ -50,15 +50,16 @@ export function getConfig(useCache = true) {
 
         assign(config, require(configFilePath));
         config.rules.forEach(d => (d._source = configFilePath));
-        logger.info('配置文件加载成功', color.cyan(configFilePath));
+        config.ruleDirs = config.ruleDirs.map(d => resolve(d.trim()));
 
         Watcher.add(configFilePath, type => {
           if (type === 'update') {
-            logger.info('配置文件更新', color.cyan(configFilePath));
             delete require.cache[require.resolve(configFilePath)];
             getConfig(false);
           }
         });
+
+        logger.info('配置文件加载成功', color.cyan(configFilePath));
         return true;
       } catch (e) {
         logger.error('配置文件加载失败', color.red(configFilePath));
@@ -80,26 +81,26 @@ export function getConfig(useCache = true) {
     if (!Array.isArray(config.ruleDirs)) config.ruleDirs = [config.ruleDirs as never as string];
 
     if (basename(process.cwd()).includes('x-scripts-rules')) config.ruleDirs.push(process.cwd());
-    if (basename(process.cwd()).includes('whistle-rules')) config.whistleRules.push(process.cwd());
+    if (basename(process.cwd()).includes('whistle-rules')) config.whistleRules.push({ path: process.cwd() });
 
     readdirSync(process.cwd()).forEach(d => {
       if (d.includes('x-scripts-rules')) {
         config.ruleDirs.push(d);
 
         if (statSync(d).isDirectory()) {
-          readdirSync(d).forEach(filename => filename.includes('whistle-rule') && config.whistleRules.push(resolve(d, filename)));
+          readdirSync(d).forEach(filename => filename.includes('whistle-rule') && config.whistleRules.push({ path: resolve(d, filename) }));
         }
       }
     });
 
-    const allRules = rulesManage.loadRules(config.ruleDirs, !isLoaded);
+    const allRules = rulesManage.loadRules(config.ruleDirs, true);
     config.rules.forEach(d => {
       if (Array.isArray(d)) d.forEach(d => d.ruleId && allRules.set(d.ruleId, d));
       else if (d?.ruleId) allRules.set(d.ruleId, d);
     });
-    rulesManage.classifyRules([...allRules.values()], config, !isLoaded);
+    rulesManage.classifyRules([...allRules.values()], config, true);
 
-    config.whistleRules.forEach(d => handlerRuleFiles(d));
+    loadW2Rules(config.whistleRules, 'clear');
 
     isLoaded = true;
     config.watch ? Watcher.start() : Watcher.stop();

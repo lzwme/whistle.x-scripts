@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 16:53:50
  * @LastEditors: renxia
- * @LastEditTime: 2024-02-29 19:50:35
+ * @LastEditTime: 2024-03-01 15:57:52
  * @Description:
  */
 /// <reference path="global.d.ts" />
@@ -49,7 +49,20 @@ export interface W2XScriptsConfig {
   /** 排除/禁用的 ruleId。若设置，则在该列表中的 ruleId 会被过滤 */
   ruleExclude?: string[];
   /** whistle rules 规则列表。可以是本地文件、远程 url、返回规则的自定义函数(仅初始化时执行一次) */
-  whistleRules?: (string | (() => Promise<string> | string))[];
+  whistleRules?: WhistleRuleItem[];
+}
+
+type WhistleRuleItem = {
+  /** 规则类型 */
+  type?: 'rules' | 'pac' | 'file';
+  /** url，远程加载 */
+  url?: string;
+  /** 为本地文件或目录路径 */
+  path?: string;
+  /** whistle Rules 规则列表 */
+  rules?: string[];
+  /** whistle Values，可在 rules 中引用规则 */
+  values?: Record<string, any>;
 }
 
 // export type RuleType = 'saveCookie' | 'mock' | 'modify';

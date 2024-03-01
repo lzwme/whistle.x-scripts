@@ -5,5 +5,5 @@
     "target": "ES2021"
   },
   "extends": "./tsconfig.json",
-  "include": ["src/server.ts", "src/init.ts", "typings"]
+  "include": ["src/server.ts", "src/rulesServer.ts", "src/init.ts", "typings"]
 }

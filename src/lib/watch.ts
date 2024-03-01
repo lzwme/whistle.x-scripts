@@ -2,12 +2,13 @@
  * @Author: renxia
  * @Date: 2024-02-07 13:38:29
  * @LastEditors: renxia
- * @LastEditTime: 2024-02-29 22:03:13
+ * @LastEditTime: 2024-03-01 13:30:04
  * @Description:
  */
 import { existsSync, readdirSync, statSync } from 'node:fs';
-import { logger } from './helper';
 import { extname, resolve } from 'node:path';
+import { color } from '@lzwme/fe-utils';
+import { logger } from './helper';
 
 export type WatcherOnChange = (type: 'update' | 'del' | 'add', filepath: string) => void;
 
@@ -22,8 +23,10 @@ function checkFile(filepath: string, config = watcherCache.get(filepath)) {
 
     if (stat.isFile()) {
       if (config.mtime !== stat.mtimeMs) {
-        config.onchange(config.mtime ? 'update' : 'add', filepath);
-        config.mtime = stat.mtimeMs;
+        const type = config.mtime ? 'update' : 'add';
+        logger.log(`[Watcher]${type}:`, color.cyan(filepath));
+        config.onchange(type, filepath);
+        watcherCache.set(filepath, { ...config, mtime: stat.mtimeMs });
       }
     } else if (stat.isDirectory()) {
       readdirSync(filepath).forEach(filename => {
@@ -35,14 +38,13 @@ function checkFile(filepath: string, config = watcherCache.get(filepath)) {
           if (config.ext.includes(ext)) {
             Watcher.add(fpath, config.onchange, true);
           } else if (statSync(fpath).isDirectory() && /rules|src|vip/.test(filename)) {
-            checkFile(fpath, config);
+            checkFile(fpath, { ...config, mtime: 0 });
           }
         }
       });
     }
   } else {
-    config.onchange('del', filepath);
-    watcherCache.delete(filepath);
+    Watcher.remove(filepath);
   }
 }
 
@@ -60,23 +62,37 @@ export const Watcher = {
       logger.debug(`Watcher file added: [${filepath}]. cache size:`, watcherCache.size);
     }
   },
-  remove(filepath: string) {
+  remove(filepath: string, emitEvent = true) {
     if (watcherCache.has(filepath)) {
+      if (emitEvent) {
+        const config = watcherCache.get(filepath);
+        config.onchange('del', filepath);
+      }
+
       watcherCache.delete(filepath);
-      logger.info(`Watcher file removed: [${filepath}]. cache size:`, watcherCache.size);
+      if (statSync(filepath).isDirectory()) {
+        watcherCache.forEach((_config, key) => {
+          if (key.startsWith(filepath)) Watcher.remove(key, emitEvent);
+        });
+      }
+
+      logger.log('[Watcher]removed:', color.yellow(filepath), `. cache size:`, watcherCache.size);
     }
   },
-  clear() {
-    logger.info('Watcher cleared. cache size:', watcherCache.size);
+  clear(emitEvent = true) {
+    logger.info('Watcher cleaning. cache size:', watcherCache.size);
+    if (emitEvent) watcherCache.forEach((config, key) => config.onchange('del', key));
     watcherCache.clear();
   },
   start: (interval: number | boolean = 3000) => {
+    if (timer) return;
     checkWatch(Math.max(1000, +interval || 0));
     logger.info('Watcher started. cache size:', watcherCache.size);
   },
-  stop: () => {
+  stop: (clear = false) => {
     if (timer) {
       clearTimeout(timer);
+      if (clear) Watcher.clear();
       logger.info('Watcher stoped. cache size:', watcherCache.size);
       timer = null;
     }
