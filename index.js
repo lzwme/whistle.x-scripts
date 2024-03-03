@@ -6,8 +6,10 @@
  * @Description: 一个 whistle 插件， 用于自动抓取 cookie 并保存
  */
 
-exports.server = require('./dist/server.js').default;
-exports.rulesServer = require('./dist/rulesServer.js').rulesServer;
+module.exports = require('./dist/index');
+
+// exports.server = require('./dist/server.js').default;
+// exports.rulesServer = require('./dist/rulesServer.js').rulesServer;
 // exports.reqRead = require('./dist/reqRead').default;
 // exports.reqWrite = require('./dist/reqWrite').default;
 // exports.resRead = require('./dist/resRead').default;

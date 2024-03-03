@@ -33,6 +33,19 @@ function ruleFormat(rule: RuleItem) {
 
   if (!rule.desc) rule.desc = `${rule.ruleId}_${rule.url || rule.method}`;
 
+  if (!rule.mitm && typeof rule.url === 'string') {
+    const r = /^https:\/\/([a-z.*]+)/.exec(rule.url);
+    if (r) rule.mitm = [r[1]];
+  }
+
+  if (rule.mitm) {
+    if (!Array.isArray(rule.mitm)) rule.mitm = [rule.mitm];
+    rule.mitm = rule.mitm.filter(Boolean).map(d => {
+      if (typeof d === 'string' && d.includes('*')) return new RegExp(d.replace(/\*+/g, '([a-z:]+)'));
+      return d;
+    });
+  }
+
   return rule;
 }
 

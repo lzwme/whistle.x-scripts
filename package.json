@@ -45,10 +45,10 @@
     "./x-scripts-rules"
   ],
   "dependencies": {
+    "@lzwme/fe-utils": "^1.7.0",
     "micromatch": "^4.0.5"
   },
   "devDependencies": {
-    "@lzwme/fe-utils": "^1.7.0",
     "@lzwme/fed-lint-helper": "^2.5.2",
     "@types/node": "^20.11.22",
     "base64-js": "^1.5.1",

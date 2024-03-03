@@ -113,7 +113,7 @@ if [ ! -e w2.x-scripts.config.js ]; then
   cp /usr/local/lib/node_modules/@lzwme/whistle.x-scripts/w2.x-scripts.config.sample.js w2.x-scripts.config.js
 fi
 
-w2 start -M capture
+w2 start # -M capture
 ```
 
 2. 进入 `/ql/data/scripts/whistle` 目录（若为 docker 方式安装，则进入对应映射目录下），参考 [w2.x-scripts.config.sample.js](./w2.x-scripts.config.sample.js) 新建/修改配置文件 `w2.x-scripts.config.js`。

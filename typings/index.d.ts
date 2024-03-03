@@ -40,6 +40,8 @@ export interface W2XScriptsConfig {
   throttleTime?: number;
   /** 缓存数据有效时长。单位秒。默认为 12 小时（12 * 60 * 60） */
   cacheDuration?: number;
+  /** 是否启用 rule.mitm 配置。默认为 true。当无法在某些环境下安装 CA 证书时，可设置为 false 以禁用由 mitm 开启的 https 拦截 */
+  enableMITM?: boolean;
   /** 自定义脚本规则 */
   rules?: RuleItem[];
   /** 指定规则集文件路径或所在目录，尝试从该列表加载自定义的规则集 */
@@ -93,6 +95,13 @@ export interface RuleItem {
   on?: RuleRunOnType;
   /** 禁用该规则 */
   disabled?: boolean;
+  /** 
+   * MITM 域名匹配配置。
+   * 当 res-body 类型的规则命中时会主动启用 https 解析拦截(whistle 未启用 https 拦截时)。
+   * 若 url 参数以  https:// 开头，则从其提取 host 域名配置部分作为 mitm 默认值。
+   * 推荐配置该项以选择性的启用 https 拦截，以提升 whistle 代理性能与效率。
+   */
+  mitm?: string | RegExp | (string | RegExp)[];
   /** url 匹配规则 */
   url?: string | RegExp | ((url: string, method: string, headers: IncomingHttpHeaders) => boolean);
   /** 方法匹配。可选： post、get、put 等。设置为空或 ** 表示全部匹配。若不设置，默认为 post */
