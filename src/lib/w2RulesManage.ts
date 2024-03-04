@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-22 14:00:13
  * @LastEditors: renxia
- * @LastEditTime: 2024-03-01 16:41:28
+ * @LastEditTime: 2024-03-04 22:48:50
  * @Description:
  */
 import { existsSync, readFileSync } from 'node:fs';
@@ -119,14 +119,27 @@ export function loadW2Rules(whistleRules: WhistleRuleItem[], action: 'clear' | '
   }
 }
 
+const cache = {
+  w2Rules: {
+    value: '',
+    update: 0,
+  },
+};
 export function getW2Rules() {
-  const rulesSet = new Set<string>();
-  const values = {} as W2RuleMapItem['values'];
+  const now = Date.now();
 
-  rulesMap.forEach(item => {
-    item.rules.forEach(r => rulesSet.add(r));
-    Object.assign(values, item.values);
-  });
+  // 30s 缓存
+  if (now - cache.w2Rules.update > 30_000) {
+    const rulesSet = new Set<string>();
+    const values = {} as W2RuleMapItem['values'];
 
-  return JSON.stringify({ rules: [...rulesSet].join('\n'), values });
+    rulesMap.forEach(item => {
+      item.rules.forEach(r => rulesSet.add(r));
+      Object.assign(values, item.values);
+    });
+
+    cache.w2Rules.value = JSON.stringify({ rules: [...rulesSet].join('\n').replace(/#.+\n?/gm, ''), values });
+  }
+
+  return cache.w2Rules.value;
 }

@@ -42,7 +42,7 @@
     "w2.x-scripts.config.sample.js",
     "./dist",
     "./typings",
-    "./x-scripts-rules"
+    "./template"
   ],
   "dependencies": {
     "@lzwme/fe-utils": "^1.7.0",

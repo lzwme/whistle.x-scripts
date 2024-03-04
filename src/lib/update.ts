@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 13:38:34
  * @LastEditors: renxia
- * @LastEditTime: 2024-02-04 22:16:42
+ * @LastEditTime: 2024-03-06 16:28:59
  * @Description:
  */
 import fs from 'node:fs';
@@ -43,6 +43,9 @@ export async function updateToQlEnvConfig({ name, value, desc }: EnvConfig, upda
       if (updateEnvValue instanceof RegExp) params.value = updateEnvValueByRegExp(updateEnvValue, { name, value, desc }, item.value);
       else params.value = await updateEnvValue({ name, value }, item.value, X);
       if (!params.value) return;
+    } else if (value.includes('##') && item.value.includes('##')) {
+      // 支持配置以 ## 隔离 uid
+      params.value = updateEnvValueByRegExp(/##([a-z0-9_\-*]+)/i, { name, value, desc }, item.value);
     }
 
     params.id = item.id;
