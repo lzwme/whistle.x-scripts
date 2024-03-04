@@ -30,7 +30,7 @@ export default (server: Whistle.PluginServer, options: Whistle.PluginOptions) =>
             const r = await ruleHandler({ req, rule, res });
             if (r.body != null) return res.end(util.toBuffer(r.body) || '');
           } catch (e) {
-            logger.error('[ruleHandler]err', rule.ruleId, e);
+            logger.error(`[ruleHandler][${color.red(rule.ruleId)}]err`, e);
           }
         }
       }

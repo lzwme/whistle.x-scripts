@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-10 16:58:26
  * @LastEditors: renxia
- * @LastEditTime: 2024-02-29 22:13:44
+ * @LastEditTime: 2024-03-05 15:33:27
  * @Description: 基于 whistle 的 cookie 自动抓取插件
  */
 
@@ -35,15 +35,18 @@ function ruleMatcher({ rule, req }: RuleHandlerOptions) {
   // url match
   if (!errmsg) {
     const { url } = req.originalReq;
-    if (typeof rule.url === 'function') {
-      if (!rule.url(url, method, req.headers)) errmsg = '[func] url match failed';
-    } else if (rule.url instanceof RegExp) {
-      if (!rule.url.test(url)) errmsg = '[RegExp] url match failed';
-    } else if (typeof rule.url === 'string') {
-      if (url !== rule.url && !micromatch.isMatch(url, rule.url)) {
-        errmsg = `url ${url} not match rule.url ${color.cyan(rule.url)}`;
+    const urlMatchList = Array.isArray(rule.url) ? rule.url : [rule.url];
+    const isUrlMatch = urlMatchList.some(ruleUrl => {
+      if (typeof ruleUrl === 'function') {
+        return ruleUrl(url, method, req.headers);
+      } else if (ruleUrl instanceof RegExp) {
+        return ruleUrl.test(url);
+      } else if (typeof ruleUrl === 'string') {
+        return url == ruleUrl || micromatch.isMatch(url, ruleUrl);
       }
-    }
+    });
+
+    if (!isUrlMatch) errmsg = `[url] ${url} not match rule.url`;
   }
 
   if (errmsg) {

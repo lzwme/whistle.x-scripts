@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 13:38:34
  * @LastEditors: renxia
- * @LastEditTime: 2024-02-04 22:16:42
+ * @LastEditTime: 2024-03-22 10:44:22
  * @Description:
  */
 import fs from 'node:fs';
@@ -43,6 +43,9 @@ export async function updateToQlEnvConfig({ name, value, desc }: EnvConfig, upda
       if (updateEnvValue instanceof RegExp) params.value = updateEnvValueByRegExp(updateEnvValue, { name, value, desc }, item.value);
       else params.value = await updateEnvValue({ name, value }, item.value, X);
       if (!params.value) return;
+    } else if (value.includes('##') && item.value.includes('##')) {
+      // 支持配置以 ## 隔离 uid
+      params.value = updateEnvValueByRegExp(/##([a-z0-9_\-*]+)/i, { name, value, desc }, item.value);
     }
 
     params.id = item.id;
@@ -77,6 +80,9 @@ export async function updateEnvConfigFile({ name, value, desc }: EnvConfig, upda
       if (updateEnvValue instanceof RegExp) value = updateEnvValueByRegExp(updateEnvValue, { name, value }, oldValue);
       else value = (await updateEnvValue({ name, value }, oldValue, X)) as string;
       if (!value) return;
+    } else if (value.includes('##') && value.includes('##')) {
+      // 支持配置以 ## 隔离 uid
+      value = updateEnvValueByRegExp(/##([a-z0-9_\-*]+)/i, { name, value, desc }, value);
     }
 
     content = content.replace(new RegExp(`export ${name}=.*`, 'g'), `export ${name}="${value}"`);
@@ -95,9 +101,19 @@ function updateEnvValueByRegExp(re: RegExp, { name, value }: EnvConfig, oldValue
 
   const sep = oldValue.includes('\n') ? '\n' : '&';
   if (sep !== '&') value = value.replaceAll('&', sep);
+
+  const val: string[] = [];
+  const values = value.split(sep).map(d => [d, d.match(re)?.[0]]);
+
   oldValue.split(sep).forEach(cookie => {
     const uidValue = cookie.match(re)?.[0];
-    if (uidValue && !value.includes(uidValue)) value += `${sep}${cookie}`;
+    if (uidValue) {
+      const item = values.find(d => d[1] === uidValue);
+      val.push(item?.[0] || cookie);
+    }
   });
-  return value;
+
+  values.forEach(d => !val.includes(d[0]) && val.push(d[0]));
+
+  return val.join(sep);
 }

@@ -74,6 +74,8 @@ export type RuleRunOnType = 'req-header' | 'req-body' | 'res-body';
 
 type PromiseMaybe<T> = T | Promise<T>;
 
+type RuleUrlItem = string | RegExp | ((url: string, method: string, headers: IncomingHttpHeaders) => boolean);
+
 export interface RuleItem {
   /** 规则 id，唯一标记 */
   ruleId: string;
@@ -95,7 +97,7 @@ export interface RuleItem {
   on?: RuleRunOnType;
   /** 禁用该规则 */
   disabled?: boolean;
-  /** 
+  /**
    * MITM 域名匹配配置。
    * 当 res-body 类型的规则命中时会主动启用 https 解析拦截(whistle 未启用 https 拦截时)。
    * 若 url 参数以  https:// 开头，则从其提取 host 域名配置部分作为 mitm 默认值。
@@ -103,7 +105,7 @@ export interface RuleItem {
    */
   mitm?: string | RegExp | (string | RegExp)[];
   /** url 匹配规则 */
-  url?: string | RegExp | ((url: string, method: string, headers: IncomingHttpHeaders) => boolean);
+  url?: RuleUrlItem | RuleUrlItem[];
   /** 方法匹配。可选： post、get、put 等。设置为空或 ** 表示全部匹配。若不设置，默认为 post */
   method?: string;
   /** [envConfig]是否上传至 青龙 环境变量配置。需配置 qlToken */
@@ -119,7 +121,7 @@ export interface RuleItem {
   /** 获取当前用户唯一性的 uid，及自定义需缓存的数据 data(可选) */
   getCacheUid?: string | ((ctx: RuleHandlerParams) => string | { uid: string; data: any } | undefined);
   /** [envConfig]更新处理已存在的环境变量，返回合并后的结果。若无需修改则可返回空 */
-  updateEnvValue?: (envConfig: EnvConfig, oldValue: string, X: RuleHandlerParams['X']) => string | undefined;
+  updateEnvValue?: ((envConfig: EnvConfig, oldValue: string, X: RuleHandlerParams['X']) => string | undefined) | RegExp;
   /** <${type}>handler 简写。根据 type 类型自动识别 */
   handler?: (ctx: RuleHandlerParams) => PromiseMaybe<RuleHandlerResult>;
   // /** 规则处理并返回环境变量配置。可以数组的形式返回多个 */

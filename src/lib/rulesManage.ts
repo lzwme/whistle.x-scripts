@@ -18,6 +18,8 @@ function ruleFormat(rule: RuleItem) {
     return false;
   }
 
+  if (rule.method == null) rule.method = 'post';
+
   if (!rule.ruleId) {
     rule.ruleId = `${rule.desc || rule.url}_${rule.method || ''}`;
     logger.log(`未设置 ruleId 参数，采用 desc/url + method。[${rule.ruleId}]`);
@@ -29,8 +31,6 @@ function ruleFormat(rule: RuleItem) {
     rule.on = ruleOn;
   }
 
-  if (rule.method == null) rule.method = 'post';
-
   if (!rule.desc) rule.desc = `${rule.ruleId}_${rule.url || rule.method}`;
 
   if (!rule.mitm && typeof rule.url === 'string') {
@@ -40,10 +40,7 @@ function ruleFormat(rule: RuleItem) {
 
   if (rule.mitm) {
     if (!Array.isArray(rule.mitm)) rule.mitm = [rule.mitm];
-    rule.mitm = rule.mitm.filter(Boolean).map(d => {
-      if (typeof d === 'string' && d.includes('*')) return new RegExp(d.replace(/\*+/g, '([a-z:]+)'));
-      return d;
-    });
+    rule.mitm = rule.mitm.filter(d => d && (typeof d === 'string' || d instanceof RegExp));
   }
 
   return rule;
