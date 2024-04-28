@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 16:53:50
  * @LastEditors: renxia
- * @LastEditTime: 2024-03-01 15:57:52
+ * @LastEditTime: 2024-04-12 09:17:15
  * @Description:
  */
 /// <reference path="global.d.ts" />
@@ -31,6 +31,10 @@ export interface W2XScriptsConfig {
     password?: string;
     /** 两步验证秘钥。若开启了两步验证则需设置 */
     twoFactorSecret?: string;
+    /** open app client_id： 应用设置-创建应用，权限选择 环境变量 */
+    clientId?: string;
+    /** open app client_secret */
+    clientSecret?: string;
   };
   /** 写入环境变量信息到本地文件的路径。若设置为空则不写入 */
   envConfFile?: string;
@@ -184,7 +188,10 @@ export interface EnvConfig {
   name?: string;
   /** 环境变量值 */
   value: string;
+  /** 描述信息 */
   desc?: string;
+  /** 多账号分隔符 */
+  sep?: string;
 }
 
 interface CacheData<T = any> {

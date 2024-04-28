@@ -12,7 +12,7 @@
     "url": "https://lzw.me"
   },
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "husky || true",
     "dev": "tsc -p tsconfig.cjs.json -w",
     "lint": "flh --prettier --tscheck",
     "build": "npm run clean && tsc -p tsconfig.cjs.json",
@@ -45,17 +45,17 @@
     "./template"
   ],
   "dependencies": {
-    "@lzwme/fe-utils": "^1.7.0",
+    "@lzwme/fe-utils": "^1.7.2",
     "micromatch": "^4.0.5"
   },
   "devDependencies": {
     "@lzwme/fed-lint-helper": "^2.5.2",
-    "@types/node": "^20.11.22",
+    "@types/node": "^20.12.3",
     "base64-js": "^1.5.1",
     "crypto-js": "^4.2.0",
     "husky": "^9.0.11",
     "prettier": "^3.2.5",
     "standard-version": "^9.5.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.3"
   }
 }

@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 13:38:34
  * @LastEditors: renxia
- * @LastEditTime: 2024-03-22 10:44:22
+ * @LastEditTime: 2024-04-22 09:22:04
  * @Description:
  */
 import fs from 'node:fs';
@@ -16,12 +16,13 @@ import { QingLoing, type QLResponse, type QLEnvItem } from './QingLong';
 const { green, magenta, gray, cyan } = color;
 const updateCache = { qlEnvList: [] as QLEnvItem[], updateTime: 0 };
 
-export async function updateToQlEnvConfig({ name, value, desc }: EnvConfig, updateEnvValue?: RuleItem['updateEnvValue']) {
+export async function updateToQlEnvConfig(envConfig: EnvConfig, updateEnvValue?: RuleItem['updateEnvValue']) {
   const config = getConfig();
-  const ql = QingLoing.getInstance(config.ql);
+  const ql = QingLoing.getInstance({ ...config.ql, debug: config.debug });
   if (!(await ql.login())) return;
 
   if (Date.now() - updateCache.updateTime > 1000 * 60 * 60 * 1) updateCache.qlEnvList = [];
+  let { name, value, desc, sep } = envConfig;
   let item = updateCache.qlEnvList.find(d => d.name === name);
   if (!item) {
     updateCache.qlEnvList = await ql.getEnvList();
@@ -30,7 +31,7 @@ export async function updateToQlEnvConfig({ name, value, desc }: EnvConfig, upda
   }
 
   let r: QLResponse;
-  const params: Partial<QLEnvItem> = { value, name: name };
+  const params: Partial<QLEnvItem> = { name, value };
   if (desc) params.remarks = desc;
 
   if (item) {
@@ -40,12 +41,17 @@ export async function updateToQlEnvConfig({ name, value, desc }: EnvConfig, upda
     }
 
     if (updateEnvValue) {
-      if (updateEnvValue instanceof RegExp) params.value = updateEnvValueByRegExp(updateEnvValue, { name, value, desc }, item.value);
-      else params.value = await updateEnvValue({ name, value }, item.value, X);
-      if (!params.value) return;
+      if (updateEnvValue instanceof RegExp) value = updateEnvValueByRegExp(updateEnvValue, envConfig, item.value);
+      else value = await updateEnvValue(envConfig, item.value, X);
     } else if (value.includes('##') && item.value.includes('##')) {
       // 支持配置以 ## 隔离 uid
-      params.value = updateEnvValueByRegExp(/##([a-z0-9_\-*]+)/i, { name, value, desc }, item.value);
+      value = updateEnvValueByRegExp(/##([a-z0-9_\-*]+)/i, envConfig, item.value);
+    }
+
+    if (!value) return;
+
+    if (value.length + 10 < item.value.length) {
+      logger.warn(`[QL]更新值长度小于原始值！\nOLD: ${item.value}\nNEW: ${value}`);
     }
 
     params.id = item.id;
@@ -62,9 +68,10 @@ export async function updateToQlEnvConfig({ name, value, desc }: EnvConfig, upda
   return value;
 }
 
-export async function updateEnvConfigFile({ name, value, desc }: EnvConfig, updateEnvValue: RuleItem['updateEnvValue'], filePath: string) {
+export async function updateEnvConfigFile(envConfig: EnvConfig, updateEnvValue: RuleItem['updateEnvValue'], filePath: string) {
   if (!filePath) return;
 
+  let { name, value, desc } = envConfig;
   let content = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
   const isExist = content.includes(`export ${name}=`);
 
@@ -77,12 +84,12 @@ export async function updateEnvConfigFile({ name, value, desc }: EnvConfig, upda
     }
 
     if (updateEnvValue) {
-      if (updateEnvValue instanceof RegExp) value = updateEnvValueByRegExp(updateEnvValue, { name, value }, oldValue);
-      else value = (await updateEnvValue({ name, value }, oldValue, X)) as string;
+      if (updateEnvValue instanceof RegExp) value = updateEnvValueByRegExp(updateEnvValue, envConfig, oldValue);
+      else value = (await updateEnvValue(envConfig, oldValue, X)) as string;
       if (!value) return;
     } else if (value.includes('##') && value.includes('##')) {
       // 支持配置以 ## 隔离 uid
-      value = updateEnvValueByRegExp(/##([a-z0-9_\-*]+)/i, { name, value, desc }, value);
+      value = updateEnvValueByRegExp(/##([a-z0-9_\-*]+)/i, envConfig, value);
     }
 
     content = content.replace(new RegExp(`export ${name}=.*`, 'g'), `export ${name}="${value}"`);
@@ -96,24 +103,32 @@ export async function updateEnvConfigFile({ name, value, desc }: EnvConfig, upda
 }
 
 /** 更新处理已存在的环境变量，返回合并后的结果。若无需修改则可返回空 */
-function updateEnvValueByRegExp(re: RegExp, { name, value }: EnvConfig, oldValue: string) {
+function updateEnvValueByRegExp(re: RegExp, { name, value, sep }: EnvConfig, oldValue: string) {
   if (!(re instanceof RegExp)) throw Error(`[${name}]updateEnvValue 应为一个正则匹配表达式`);
 
-  const sep = oldValue.includes('\n') ? '\n' : '&';
-  if (sep !== '&') value = value.replaceAll('&', sep);
+  const sepList = ['\n', '&'];
+  const oldSep = sep && oldValue.includes(sep) ? sep : sepList.find(d => oldValue.includes(d));
+  const curSep = sep || sepList.find(d => value.includes(d));
+  if (!sep) sep = oldSep || curSep || '\n';
+  // if (sep !== '&') value = value.replaceAll('&', sep);
 
   const val: string[] = [];
-  const values = value.split(sep).map(d => [d, d.match(re)?.[0]]);
+  const values = value.split(curSep || sep).map(d => ({ value: d, id: d.match(re)?.[0] }));
 
-  oldValue.split(sep).forEach(cookie => {
+  oldValue.split(oldSep || sep).forEach(cookie => {
+    if (!cookie) return;
+
     const uidValue = cookie.match(re)?.[0];
     if (uidValue) {
-      const item = values.find(d => d[1] === uidValue);
-      val.push(item?.[0] || cookie);
+      const item = values.find(d => d.id === uidValue);
+      val.push(item ? item.value : cookie);
+    } else {
+      logger.warn(`[${name}][updateEnvValueByRegExp]oldValue未匹配到uid`, re.toString(), cookie);
+      val.push(cookie);
     }
   });
 
-  values.forEach(d => !val.includes(d[0]) && val.push(d[0]));
+  values.forEach(d => !val.includes(d.value) && val.push(d.value));
 
   return val.join(sep);
 }
