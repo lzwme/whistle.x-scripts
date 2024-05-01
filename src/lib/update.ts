@@ -41,17 +41,17 @@ export async function updateToQlEnvConfig(envConfig: EnvConfig, updateEnvValue?:
     }
 
     if (updateEnvValue) {
-      if (updateEnvValue instanceof RegExp) value = updateEnvValueByRegExp(updateEnvValue, envConfig, item.value);
-      else value = await updateEnvValue(envConfig, item.value, X);
+      if (updateEnvValue instanceof RegExp) params.value = updateEnvValueByRegExp(updateEnvValue, envConfig, item.value);
+      else params.value = await updateEnvValue(envConfig, item.value, X);
     } else if (value.includes('##') && item.value.includes('##')) {
       // 支持配置以 ## 隔离 uid
-      value = updateEnvValueByRegExp(/##([a-z0-9_\-*]+)/i, envConfig, item.value);
+      params.value = updateEnvValueByRegExp(/##([a-z0-9_\-*]+)/i, envConfig, item.value);
     }
 
-    if (!value) return;
+    if (!params.value) return;
 
-    if (value.length + 10 < item.value.length) {
-      logger.warn(`[QL]更新值长度小于原始值！\nOLD: ${item.value}\nNEW: ${value}`);
+    if (params.value.length + 10 < item.value.length) {
+      logger.warn(`[QL]更新值长度小于原始值！\nOLD: ${item.value}\nNEW: ${params.value}`);
     }
 
     params.id = item.id;
