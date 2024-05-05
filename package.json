@@ -1,6 +1,6 @@
 {
   "name": "@lzwme/whistle.x-scripts",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "一个基于 whistle 的代理脚本插件。用于辅助 web 程序调试、逆向学习等目的。让用户可以用自由编码开发的方式编写简单的规则脚本，即可实现自动保存登录认证 cookie、模拟接口数据、修改接口数据等功能。",
   "main": "index.js",
   "typings": "./typings/index.d.ts",
@@ -45,17 +45,17 @@
     "./template"
   ],
   "dependencies": {
-    "@lzwme/fe-utils": "^1.7.2",
+    "@lzwme/fe-utils": "^1.7.3",
     "micromatch": "^4.0.5"
   },
   "devDependencies": {
-    "@lzwme/fed-lint-helper": "^2.5.2",
-    "@types/node": "^20.12.3",
+    "@lzwme/fed-lint-helper": "^2.6.0",
+    "@types/node": "^20.12.8",
     "base64-js": "^1.5.1",
     "crypto-js": "^4.2.0",
     "husky": "^9.0.11",
     "prettier": "^3.2.5",
     "standard-version": "^9.5.0",
-    "typescript": "^5.4.3"
+    "typescript": "^5.4.5"
   }
 }

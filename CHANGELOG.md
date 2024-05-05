@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.4](https://github.com/lzwme/whistle.x-scripts/compare/v0.0.3...v0.0.4) (2024-05-05)
+
+
+### Features
+
+* 新增 rulesServer，支持配置自定义的 whistle 原生支持规则，支持从远程加载 ([1305910](https://github.com/lzwme/whistle.x-scripts/commit/130591067738f67b19a280fee305fa0877dca8a6))
+* 新增支持 MITM 配置，支持部分的启用 https 拦截以改善 w2 代理性能 ([a2d3e56](https://github.com/lzwme/whistle.x-scripts/commit/a2d3e56f2b9bfed0a2548515f776b85bdd44159c))
+
+
+### Bug Fixes
+
+* 修复 updateToQL 多账号会丢失旧数据的问题 ([0db59c1](https://github.com/lzwme/whistle.x-scripts/commit/0db59c191f89bb6443db2d168dba3a785e8e96a1))
+
 ### [0.0.3](https://github.com/lzwme/whistle.x-scripts/compare/v0.0.2...v0.0.3) (2024-02-29)
 
 
