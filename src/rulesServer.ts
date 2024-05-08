@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-22 14:00:13
  * @LastEditors: renxia
- * @LastEditTime: 2024-03-01 16:28:09
+ * @LastEditTime: 2024-05-08 14:01:31
  * @Description:
  */
 import { handlerW2RuleFiles, getW2Rules } from './lib/w2RulesManage';
@@ -15,6 +15,7 @@ export function rulesServer(server: Whistle.PluginServer, options: Whistle.Plugi
       await handlerW2RuleFiles({ path: isUrl ? '' : rulePath, url: isUrl ? rulePath : '' });
     }
 
-    res.end(getW2Rules());
+    const rules = getW2Rules(req);
+    rules ? res.end(rules) : res.end();
   });
 }

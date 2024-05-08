@@ -26,17 +26,12 @@ function ruleFormat(rule: RuleItem) {
   }
 
   if (!rule.on || !RuleOnList.includes(rule.on)) {
-    const ruleOn = rule.getCacheUid ? 'req-header' : 'res-body';
+    const ruleOn = rule.getCacheUid ? 'res-body' : 'req-header';
     if (rule.on) logger.warn(`[${rule.on}] 参数错误，自动设置为[${ruleOn}]！只能取值为: ${RuleOnList.join(', ')}`, rule.ruleId);
     rule.on = ruleOn;
   }
 
   if (!rule.desc) rule.desc = `${rule.ruleId}_${rule.url || rule.method}`;
-
-  if (!rule.mitm && typeof rule.url === 'string') {
-    const r = /^https:\/\/([a-z.*]+)/.exec(rule.url);
-    if (r) rule.mitm = [r[1]];
-  }
 
   if (rule.mitm) {
     if (!Array.isArray(rule.mitm)) rule.mitm = [rule.mitm];
@@ -151,7 +146,7 @@ function removeRule(ruleId?: string[], filepath?: string[]) {
   const ruleSet = new Set(ruleId ? ruleId : []);
   const fileSet = new Set(filepath ? filepath : []);
 
-  for (const [type, item] of Object.entries(rulesManage.rules)) {
+  for (const [type, item] of Object.entries(rulesManager.rules)) {
     for (const [ruleId, rule] of item) {
       if (ruleSet.has(ruleId) || fileSet.has(rule._source)) {
         item.delete(ruleId);
@@ -174,7 +169,7 @@ const onRuleFileChange: WatcherOnChange = (type, filepath) => {
   }
 };
 
-export const rulesManage = {
+export const rulesManager = {
   rules: RulesCache,
   ruleFormat,
   classifyRules,

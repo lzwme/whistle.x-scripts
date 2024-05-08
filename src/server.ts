@@ -9,7 +9,7 @@ import { color } from '@lzwme/fe-utils';
 import { toQueryString } from '@lzwme/fe-utils/cjs/common/url';
 import { logger } from './lib/helper';
 import { ruleHandler } from './lib/ruleHandler';
-import { rulesManage } from './lib/rulesManage';
+import { rulesManager } from './lib/rulesManager';
 import * as util from './util/util';
 
 export default (server: Whistle.PluginServer, options: Whistle.PluginOptions) => {
@@ -21,7 +21,7 @@ export default (server: Whistle.PluginServer, options: Whistle.PluginOptions) =>
       if (util.isRemote(req)) return req.passThrough();
 
       const { method, headers, fullUrl: url } = req;
-      const reqHeaderRules = rulesManage.rules['req-header'];
+      const reqHeaderRules = rulesManager.rules['req-header'];
       logger.trace('[request]', color.cyan(method), color.gray(url));
 
       if (reqHeaderRules?.size > 0) {
@@ -40,7 +40,7 @@ export default (server: Whistle.PluginServer, options: Whistle.PluginOptions) =>
         async (body, next, ctx) => {
           reqBody = body;
 
-          const mockRules = rulesManage.rules['req-body'];
+          const mockRules = rulesManager.rules['req-body'];
           if (mockRules?.size > 0) {
             for (const rule of mockRules.values()) {
               try {
@@ -64,7 +64,7 @@ export default (server: Whistle.PluginServer, options: Whistle.PluginOptions) =>
           next({ body });
         },
         async (body, next, ctx) => {
-          const resBodyRules = rulesManage.rules['res-body'];
+          const resBodyRules = rulesManager.rules['res-body'];
 
           if (resBodyRules?.size > 0) {
             for (const rule of resBodyRules.values()) {

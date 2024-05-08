@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 16:53:50
  * @LastEditors: renxia
- * @LastEditTime: 2024-04-12 09:17:15
+ * @LastEditTime: 2024-05-08 15:19:58
  * @Description:
  */
 /// <reference path="global.d.ts" />
@@ -104,8 +104,6 @@ export interface RuleItem {
   /**
    * MITM 域名匹配配置。
    * 当 res-body 类型的规则命中时会主动启用 https 解析拦截(whistle 未启用 https 拦截时)。
-   * 若 url 参数以  https:// 开头，则从其提取 host 域名配置部分作为 mitm 默认值。
-   * 推荐配置该项以选择性的启用 https 拦截，以提升 whistle 代理性能与效率。
    */
   mitm?: string | RegExp | (string | RegExp)[];
   /** url 匹配规则 */
@@ -129,7 +127,7 @@ export interface RuleItem {
   /** <${type}>handler 简写。根据 type 类型自动识别 */
   handler?: (ctx: RuleHandlerParams) => PromiseMaybe<RuleHandlerResult>;
   // /** 规则处理并返回环境变量配置。可以数组的形式返回多个 */
-  // saveCookieHandler?: (ctx: RuleHandlerParams & { allCacheData: CacheData[] }) => PromiseMaybe<RuleHandlerResult | EnvConfig | EnvConfig[]>;
+  // saveCookieHandler?: (ctx: RuleHandlerParams & { cacheData: CacheData[] }) => PromiseMaybe<RuleHandlerResult | EnvConfig | EnvConfig[]>;
   // /** [mock] 接口模拟处理，返回需 mock 的结果。若返回为空则表示忽略 */
   // mockHandler?: (ctx: RuleHandlerParams) => PromiseMaybe<RuleHandlerResult<string | Buffer> | Buffer | string | object>;
   // /** [modify] 接收到请求返回数据后修改或保存数据的处理 */
@@ -164,7 +162,12 @@ export type RuleHandlerParams = {
   /** req.headers.cookie 格式化为的对象格式 */
   cookieObj: Record<string, string>;
   /** 当设置了 getCacheUid 时，返回同一规则缓存的所有数据(包含由 getCacheUid 格式化返回的 data 数据) */
-  allCacheData: CacheData[];
+  cacheData: CacheData[];
+  /**
+   * 同 cacheData
+   * @deprecated 将在后续版本废除，请使用 cacheData
+   */
+  allCacheData?: CacheData[];
   /** [on=req-body, res-body] 请求参数 body */
   reqBody?: Record<string, any> | Buffer;
   /** [on=res-body] 远程接口返回的 body */

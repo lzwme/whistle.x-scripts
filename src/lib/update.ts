@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 13:38:34
  * @LastEditors: renxia
- * @LastEditTime: 2024-04-22 09:22:04
+ * @LastEditTime: 2024-05-07 09:34:05
  * @Description:
  */
 import fs from 'node:fs';
@@ -22,7 +22,7 @@ export async function updateToQlEnvConfig(envConfig: EnvConfig, updateEnvValue?:
   if (!(await ql.login())) return;
 
   if (Date.now() - updateCache.updateTime > 1000 * 60 * 60 * 1) updateCache.qlEnvList = [];
-  let { name, value, desc, sep } = envConfig;
+  let { name, value, desc, sep = '\n' } = envConfig;
   let item = updateCache.qlEnvList.find(d => d.name === name);
   if (!item) {
     updateCache.qlEnvList = await ql.getEnvList();
@@ -62,7 +62,8 @@ export async function updateToQlEnvConfig(envConfig: EnvConfig, updateEnvValue?:
   }
 
   const isSuccess = r.code === 200;
-  logger.info(`${item ? green('更新') : magenta('新增')}QL环境变量[${name}]`, isSuccess ? '成功' : r);
+  const count = params.value.includes(sep) ? params.value.trim().split(sep).length : 1;
+  logger.info(`${item ? green('更新') : magenta('新增')}QL环境变量[${green(name)}][${count}]`, isSuccess ? '成功' : r);
   if (isSuccess && item) item.value = value;
 
   return value;

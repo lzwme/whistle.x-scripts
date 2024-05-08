@@ -27,7 +27,6 @@
     "cookie",
     "env"
   ],
-  "packageManager": "pnpm@8.0.0",
   "engines": {
     "node": ">=16"
   },

@@ -1,18 +1,22 @@
-import { getConfig } from './lib/getConfig';
-import { rulesManage } from './lib/rulesManage';
 import { isMatch } from 'micromatch';
+import { getConfig } from './lib/getConfig';
+import { ruleMatcher } from './lib/ruleHandler';
+import { rulesManager } from './lib/rulesManager';
 
 function mitmMatch(req: Whistle.PluginRequest) {
-  if (rulesManage.rules['res-body'].size === 0) return;
+  if (rulesManager.rules['res-body'].size === 0) return;
 
   const host = (req.headers.host || new URL(req.originalReq.fullUrl).host).split(':')[0];
-  const resBodyRules = rulesManage.rules['res-body'].values();
+  const resBodyRules = rulesManager.rules['res-body'].values();
 
-  for (const item of resBodyRules) {
-    if (item.mitm) {
-      const ok = (item.mitm as (string | RegExp)[]).some(d => (d instanceof RegExp ? d.test(host) : isMatch(host, d)));
+  for (const rule of resBodyRules) {
+    if (rule.mitm) {
+      const ok = (rule.mitm as (string | RegExp)[]).some(d => (d instanceof RegExp ? d.test(host) : isMatch(host, d)));
       if (ok) return host;
     }
+
+    const msg = ruleMatcher({ rule, req: req as unknown as Whistle.PluginServerRequest, res: null });
+    if (!msg) return host;
   }
 }
 

@@ -11,7 +11,7 @@ import { basename, resolve } from 'node:path';
 import { homedir } from 'node:os';
 import { assign, color } from '@lzwme/fe-utils';
 import { logger } from './helper';
-import { rulesManage } from './rulesManage';
+import { rulesManager } from './rulesManager';
 import { Watcher } from './watch';
 import { loadW2Rules } from './w2RulesManage';
 
@@ -93,12 +93,12 @@ export function getConfig(useCache = true) {
       }
     });
 
-    const allRules = rulesManage.loadRules(config.ruleDirs, true);
+    const allRules = rulesManager.loadRules(config.ruleDirs, true);
     config.rules.forEach(d => {
       if (Array.isArray(d)) d.forEach(d => d.ruleId && allRules.set(d.ruleId, d));
       else if (d?.ruleId) allRules.set(d.ruleId, d);
     });
-    rulesManage.classifyRules([...allRules.values()], config, true);
+    rulesManager.classifyRules([...allRules.values()], config, true);
 
     loadW2Rules(config.whistleRules, 'clear');
 

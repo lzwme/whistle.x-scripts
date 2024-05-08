@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-10 16:58:26
  * @LastEditors: renxia
- * @LastEditTime: 2024-03-05 15:33:27
+ * @LastEditTime: 2024-05-08 15:19:51
  * @Description: 基于 whistle 的 cookie 自动抓取插件
  */
 
@@ -23,7 +23,7 @@ type RuleHandlerOptions = {
   resBody?: Buffer;
 };
 
-function ruleMatcher({ rule, req }: RuleHandlerOptions) {
+export function ruleMatcher({ rule, req }: RuleHandlerOptions) {
   let errmsg = '';
 
   // method
@@ -87,7 +87,7 @@ export async function ruleHandler({ rule, req, res, reqBody, resBody }: RuleHand
     }
   }
 
-  const params: RuleHandlerParams = { req, reqBody: req._reqBody, resBody: res._resBody, headers, url, cookieObj, allCacheData: [], X };
+  const params: RuleHandlerParams = { req, reqBody: req._reqBody, resBody: res._resBody, headers, url, cookieObj, cacheData: [], X };
   if (resHeaders) params.resHeaders = resHeaders;
 
   if (rule.getCacheUid) {
@@ -115,12 +115,13 @@ export async function ruleHandler({ rule, req, res, reqBody, resBody }: RuleHand
 
       cacheData[uid] = { update: now, data: { uid, headers: req.originalReq.headers, data: uidData } };
 
-      params.allCacheData = [];
+      params.cacheData = [];
       const cacheDuration = 1000 * (Number(rule.cacheDuration || config.cacheDuration) || (rule.updateEnvValue ? 12 : 24 * 10) * 3600);
       for (const [key, value] of Object.entries(cacheData)) {
         if (cacheDuration && now - value.update > cacheDuration) delete cacheData[key];
-        else params.allCacheData.push(value.data);
+        else params.cacheData.push(value.data);
       }
+      params.allCacheData = params.cacheData;
 
       storage.setItem(rule.ruleId, cacheData);
     } else {

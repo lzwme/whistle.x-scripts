@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-22 14:00:13
  * @LastEditors: renxia
- * @LastEditTime: 2024-03-04 22:48:50
+ * @LastEditTime: 2024-05-08 13:59:33
  * @Description:
  */
 import { existsSync, readFileSync } from 'node:fs';
@@ -11,6 +11,7 @@ import { color } from '@lzwme/fe-utils';
 import { Watcher } from './watch';
 import { logger } from './helper';
 import type { WhistleRuleItem } from '../../typings';
+import { isMatch } from 'micromatch';
 
 type W2RuleMapItem = { rules: string[]; values?: Record<string, any>; config?: WhistleRuleItem };
 
@@ -121,11 +122,12 @@ export function loadW2Rules(whistleRules: WhistleRuleItem[], action: 'clear' | '
 
 const cache = {
   w2Rules: {
-    value: '',
+    value: {} as Record<string, any>,
     update: 0,
   },
 };
-export function getW2Rules() {
+
+export function getW2Rules(req: Whistle.PluginRequest) {
   const now = Date.now();
 
   // 30s 缓存
@@ -138,8 +140,28 @@ export function getW2Rules() {
       Object.assign(values, item.values);
     });
 
-    cache.w2Rules.value = JSON.stringify({ rules: [...rulesSet].join('\n').replace(/#.+\n?/gm, ''), values });
+    const rules = [...rulesSet]
+      .join('\n')
+      .split('\n')
+      .map(d => d.trim())
+      .filter(d => d && d.startsWith('#') && d.includes(' ') && d.includes('//'));
+    cache.w2Rules.value = { rules, values };
   }
 
-  return cache.w2Rules.value;
+  const { rules, values } = cache.w2Rules.value;
+  const { fullUrl } = req;
+
+  for (const line of rules) {
+    let isMatched = false;
+    let url: string | RegExp = line.split(' ')[0];
+    if ((url as string).startsWith('^http')) url = new RegExp(url);
+
+    if (url instanceof RegExp) isMatched = url.test(fullUrl);
+    else isMatched = fullUrl.includes(url) || isMatch(fullUrl, url);
+
+    // 性能考虑，暂只支持一个规则
+    if (isMatched) return { rules: [line], values };
+  }
+
+  return;
 }
