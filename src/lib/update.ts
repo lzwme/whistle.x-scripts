@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 13:38:34
  * @LastEditors: renxia
- * @LastEditTime: 2024-05-07 09:34:05
+ * @LastEditTime: 2024-05-16 14:58:45
  * @Description:
  */
 import fs from 'node:fs';
@@ -22,7 +22,7 @@ export async function updateToQlEnvConfig(envConfig: EnvConfig, updateEnvValue?:
   if (!(await ql.login())) return;
 
   if (Date.now() - updateCache.updateTime > 1000 * 60 * 60 * 1) updateCache.qlEnvList = [];
-  let { name, value, desc, sep = '\n' } = envConfig;
+  const { name, value, desc, sep = '\n' } = envConfig;
   let item = updateCache.qlEnvList.find(d => d.name === name);
   if (!item) {
     updateCache.qlEnvList = await ql.getEnvList();
@@ -56,6 +56,7 @@ export async function updateToQlEnvConfig(envConfig: EnvConfig, updateEnvValue?:
 
     params.id = item.id;
     params.remarks = desc || item.remarks || '';
+    item.value = params.value;
     r = await ql.updateEnv(params as QLEnvItem);
   } else {
     r = await ql.addEnv([params as QLEnvItem]);
@@ -64,7 +65,6 @@ export async function updateToQlEnvConfig(envConfig: EnvConfig, updateEnvValue?:
   const isSuccess = r.code === 200;
   const count = params.value.includes(sep) ? params.value.trim().split(sep).length : 1;
   logger.info(`${item ? green('更新') : magenta('新增')}QL环境变量[${green(name)}][${count}]`, isSuccess ? '成功' : r);
-  if (isSuccess && item) item.value = value;
 
   return value;
 }
@@ -77,7 +77,7 @@ export async function updateEnvConfigFile(envConfig: EnvConfig, updateEnvValue: 
   const isExist = content.includes(`export ${name}=`);
 
   if (isExist) {
-    const oldValue = content.match(new RegExp(`export ${name}="(.*)"`))?.[1] || '';
+    const oldValue = content.match(new RegExp(`export ${name}="([^"]+)"`))?.[1] || '';
 
     if (oldValue.includes(value)) {
       logger.log(`[UpdateEnv]${color.cyan(name)} 已存在`, color.gray(value));
@@ -93,7 +93,7 @@ export async function updateEnvConfigFile(envConfig: EnvConfig, updateEnvValue: 
       value = updateEnvValueByRegExp(/##([a-z0-9_\-*]+)/i, envConfig, value);
     }
 
-    content = content.replace(new RegExp(`export ${name}=.*`, 'g'), `export ${name}="${value}"`);
+    content = content.replace(`export ${name}="${oldValue}"`, `export ${name}="${value}"`);
   } else {
     if (desc) content += `\n# ${desc}`;
     content += `\nexport ${name}="${value}"`;

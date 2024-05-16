@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@lzwme/fed-lint-helper": "^2.6.0",
-    "@types/node": "^20.12.8",
+    "@types/node": "^20.12.12",
     "base64-js": "^1.5.1",
     "crypto-js": "^4.2.0",
     "husky": "^9.0.11",
