@@ -116,7 +116,8 @@ function loadRules(filepaths: string[] = [], isInit = false) {
         rules.set(rule.ruleId, rule);
       }
     } catch (e) {
-      logger.debug('尝试从文件加载规则失败：', filepath, e.message);
+      console.error(e);
+      logger.warn('从文件加载规则失败:', color.yellow(filepath), color.red(e.message));
     }
   }
 
