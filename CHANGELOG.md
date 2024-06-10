@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.5](https://github.com/lzwme/whistle.x-scripts/compare/v0.0.4...v0.0.5) (2024-06-10)
+
+
+### Bug Fixes
+
+* **update:** 修复 update 本地 envConfig 文件时多行匹配处理错误的问题 ([379d938](https://github.com/lzwme/whistle.x-scripts/commit/379d9385018940901aefd6d8108e8a128876632f))
+
 ### [0.0.4](https://github.com/lzwme/whistle.x-scripts/compare/v0.0.3...v0.0.4) (2024-05-05)
 
 
