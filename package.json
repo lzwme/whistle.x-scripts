@@ -44,17 +44,17 @@
     "./template"
   ],
   "dependencies": {
-    "@lzwme/fe-utils": "^1.7.3",
+    "@lzwme/fe-utils": "^1.7.5",
     "micromatch": "^4.0.7"
   },
   "devDependencies": {
-    "@lzwme/fed-lint-helper": "^2.6.1",
-    "@types/node": "^20.14.2",
+    "@lzwme/fed-lint-helper": "^2.6.2",
+    "@types/node": "^22.0.2",
     "base64-js": "^1.5.1",
     "crypto-js": "^4.2.0",
-    "husky": "^9.0.11",
-    "prettier": "^3.3.1",
+    "husky": "^9.1.4",
+    "prettier": "^3.3.3",
     "standard-version": "^9.5.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.5.4"
   }
 }

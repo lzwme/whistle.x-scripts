@@ -10,8 +10,8 @@ const config = {
   // envConfFile: 'env-config.sh',
   /** 写入环境变量信息到本地文件的路径。若设置为空则不写入 */
   // cacheFile: 'w2.x-scripts.cache.json',
-  /** 数据处理防抖时间间隔。单位为秒，默认为 5 (s) */
-  throttleTime: 5,
+  /** 数据处理防抖时间间隔。单位为秒，默认为 3 (s) */
+  throttleTime: 3,
   /** 指定规则集文件路径或所在目录，尝试从该列表加载自定义的规则集 */
   ruleDirs: [
     // require.resolve('@lzwme/x-scripts-rules', { paths: require.main.paths }),

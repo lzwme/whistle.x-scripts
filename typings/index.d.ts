@@ -40,7 +40,7 @@ export interface W2XScriptsConfig {
   envConfFile?: string;
   /** 缓存数据保存路径 */
   cacheFile?: string;
-  /** 数据处理防抖时间间隔。单位为秒，默认为 10 (s) */
+  /** 数据处理防抖时间间隔。单位为秒，默认为 3 (s) */
   throttleTime?: number;
   /** 缓存数据有效时长。单位秒。默认为 12 小时（12 * 60 * 60） */
   cacheDuration?: number;

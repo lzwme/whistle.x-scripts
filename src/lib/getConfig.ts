@@ -76,7 +76,7 @@ export function getConfig(useCache = true) {
       );
     }
 
-    config.throttleTime = Math.max(1, +config.throttleTime || 5);
+    config.throttleTime = Math.max(1, +config.throttleTime || 3);
 
     if (!Array.isArray(config.ruleDirs)) config.ruleDirs = [config.ruleDirs as never as string];
 
