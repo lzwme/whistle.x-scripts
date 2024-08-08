@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-11 13:38:34
  * @LastEditors: renxia
- * @LastEditTime: 2024-05-16 14:58:45
+ * @LastEditTime: 2024-08-09 09:01:16
  * @Description:
  */
 import fs from 'node:fs';
@@ -108,7 +108,7 @@ function updateEnvValueByRegExp(re: RegExp, { name, value, sep }: EnvConfig, old
   if (!(re instanceof RegExp)) throw Error(`[${name}]updateEnvValue 应为一个正则匹配表达式`);
 
   const sepList = ['\n', '&'];
-  const oldSep = sep && oldValue.includes(sep) ? sep : sepList.find(d => oldValue.includes(d));
+  const oldSep = sep || sepList.find(d => oldValue.includes(d));
   const curSep = sep || sepList.find(d => value.includes(d));
   if (!sep) sep = oldSep || curSep || '\n';
   // if (sep !== '&') value = value.replaceAll('&', sep);
