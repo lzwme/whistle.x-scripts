@@ -2,7 +2,7 @@
  * @Author: renxia
  * @Date: 2024-01-22 14:00:13
  * @LastEditors: renxia
- * @LastEditTime: 2024-02-28 16:00:10
+ * @LastEditTime: 2024-09-19 11:05:28
  * @Description:
  */
 import { color } from '@lzwme/fe-utils';
@@ -57,7 +57,8 @@ export default (server: Whistle.PluginServer, options: Whistle.PluginOptions) =>
 
                 reqBody = r.reqBody || (ctx as any)._reqBody || body;
               } catch (e) {
-                logger.error('[ruleHandler]err', rule.ruleId, e);
+                logger.error('[ruleHandler]err', rule.ruleId, (e as Error).message);
+                console.error(e);
               }
             }
           }
@@ -75,7 +76,8 @@ export default (server: Whistle.PluginServer, options: Whistle.PluginOptions) =>
                   return next({ body: Buffer.isBuffer(r.body) || typeof r.body === 'string' ? r.body : JSON.stringify(r.body) });
                 }
               } catch (e) {
-                logger.error('[ruleHandler]err', rule.ruleId, e);
+                logger.error('[ruleHandler]err', rule.ruleId, (e as Error).message);
+                console.error(e);
               }
             }
           }
