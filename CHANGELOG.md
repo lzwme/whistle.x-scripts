@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.6](https://github.com/lzwme/whistle.x-scripts/compare/v0.0.5...v0.0.6) (2024-11-11)
+
+
+### Bug Fixes
+
+* 修复ql获取的单账号ck中包含&符号默认会被处理为多账号的问题 ([536ff0f](https://github.com/lzwme/whistle.x-scripts/commit/536ff0fd2ab45234c1237b933bbb5e1ab63e81dc))
+
 ### [0.0.5](https://github.com/lzwme/whistle.x-scripts/compare/v0.0.4...v0.0.5) (2024-06-10)
 
 
